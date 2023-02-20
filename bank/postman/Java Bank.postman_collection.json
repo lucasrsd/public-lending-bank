@@ -1,0 +1,170 @@
+{
+	"info": {
+		"_postman_id": "8c0054a1-a73c-4e63-92b8-756a3413bf8d",
+		"name": "Java Bank",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1350175"
+	},
+	"item": [
+		{
+			"name": "Get account",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{apikey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/account/1676454452718",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"account",
+						"1676454452718"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create account",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{apikey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"holderName\": \"Novo lucas windows\",\n    \"holderBirthDay\": \"1994-09-01\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/account",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"account"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ledger - loan accrual",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{apikey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"loanId\": 1676835975247\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/ledger/loan/accrual/today",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"ledger",
+						"loan",
+						"accrual",
+						"today"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create loan - Price",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{apikey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"accountId\": 1676454452718,\n    \"amount\":  400000,\n    \"term\": 12,\n    \"interestRate\": 10,\n    \"amortizationType\": \"PRICE\",\n    \"interestFrequency\": \"MONTH\",\n    \"disbursementDate\": \"2022-02-20\",\n    \"tax\": \"IOF\"\n}   ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/loan",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"loan"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create loan - SAC",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{apikey}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"accountId\": 1676454452718,\n    \"amount\":  11000,\n    \"term\": 12,\n    \"interestRate\": 20,\n    \"amortizationType\": \"SAC\",\n    \"interestFrequency\": \"YEAR\",\n    \"disbursementDate\": \"2022-03-15\"\n}   ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/loan",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"loan"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
