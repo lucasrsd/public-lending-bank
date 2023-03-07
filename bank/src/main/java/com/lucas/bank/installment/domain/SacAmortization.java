@@ -1,5 +1,6 @@
 package com.lucas.bank.installment.domain;
 
+import com.lucas.bank.loan.domain.AmortizationType;
 import com.lucas.bank.shared.DateTimeUtil;
 import com.lucas.bank.taxes.application.port.out.TaxAggregate;
 import lombok.*;
@@ -47,7 +48,7 @@ public class SacAmortization extends Installment {
             var tax = addTaxIfPresent(taxes, installmentNumber);
             var installmentAmount = principal.add(interest).add(tax).setScale(PRECISION_SCALE, RoundingMode.HALF_DOWN);
 
-            var installment = InstallmentFactory.withInformation(AmortizationType.SAC, installmentNumber, InstallmentState.PENDING, dueDate, null, principal, interest, installmentAmount, tax, remainingBalance, taxCompositionIfPresent(taxes, installmentNumber));
+            var installment = InstallmentFactory.withInformation(AmortizationType.SAC, installmentNumber, InstallmentState.PENDING, dueDate, null, principal, interest, installmentAmount, tax, remainingBalance, taxCompositionIfPresent(taxes, installmentNumber), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 
             installments.add(installment);
         }

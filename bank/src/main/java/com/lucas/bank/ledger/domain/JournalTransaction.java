@@ -12,7 +12,7 @@ import java.util.Date;
 @Data
 @Builder
 public class JournalTransaction {
-    private final String transactionId;
+    private final String journalTransactionId;
     private final OperationType operationType;
     private final BigDecimal amount;
     private final LedgerAccount ledgerAccount;

@@ -21,10 +21,15 @@ class AccountMapper {
     }
 
     AccountPOJO mapToPOJO(Account account) {
-        var fakeId = new Date().getTime(); // ToDo - create atomic counter using dynamoDB
+        Long accountId = account.getAccountId();
+
+        if (accountId == null){
+            accountId =  new Date().getTime();
+        }
+
         return AccountPOJO
                 .builder()
-                .accountId(fakeId)
+                .accountId(accountId)
                 .holderName(account.getHolderName())
                 .holderBirthDate(DateTimeUtil.to(account.getHolderBirthDate()))
                 .createdAt(DateTimeUtil.to(account.getCreatedAt()))

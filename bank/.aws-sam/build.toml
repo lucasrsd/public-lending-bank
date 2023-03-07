@@ -8,6 +8,6 @@ architecture = "x86_64"
 handler = "com.lucas.bank.StreamLambdaHandler::handleRequest"
 manifest_hash = ""
 packagetype = "Zip"
-functions = ["BankApiFunction", "LoanDailyAccrualFunction"]
+functions = ["BankApiFunction"]
 
 [layer_build_definitions]

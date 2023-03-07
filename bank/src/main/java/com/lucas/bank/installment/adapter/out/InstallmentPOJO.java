@@ -1,28 +1,18 @@
 package com.lucas.bank.installment.adapter.out;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import lombok.*;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 
 import java.math.BigDecimal;
 import java.util.Map;
 
-@DynamoDbBean
+@DynamoDBDocument
 @Getter
 @Setter
 @AllArgsConstructor
 @Builder
 public class InstallmentPOJO {
-
-    private static final String pkPrefix = "loan-installments#";
-    private static final String skPrefix = "installment-number#";
-
-    private String pk;
-    private String sk;
-
-    private Long loanId;
     private Integer number;
     private String amortizationType;
     private String installmentState;
@@ -35,25 +25,11 @@ public class InstallmentPOJO {
     private BigDecimal remainingBalance;
     private Map<String, BigDecimal> taxComposition;
 
+    private BigDecimal paidPrincipalAmount;
+    private BigDecimal paidInterestAmount;
+    private BigDecimal paidTaxAmount;
+
     public InstallmentPOJO(){
 
-    }
-
-    public static String buildPk(Long loanId) {
-        return pkPrefix + loanId;
-    }
-
-    public static String buildSk(Integer number) {
-        return skPrefix + number;
-    }
-
-    @DynamoDbPartitionKey
-    public String getPk() {
-        return buildPk(loanId);
-    }
-
-    @DynamoDbSortKey
-    public String getSk() {
-        return buildSk(number);
     }
 }

@@ -13,13 +13,13 @@ import java.util.Date;
 @Builder
 public class AccrualCommand extends SelfValidating<AccrualCommand> {
     @NotNull
-    private final Long loanAccountId;
+    private final Long loanId;
 
     @NotNull
     private final Date referenceDate;
 
-    public AccrualCommand(Long loanAccountId, Date referenceDate) {
-        this.loanAccountId = loanAccountId;
+    public AccrualCommand(Long loanId, Date referenceDate) {
+        this.loanId = loanId;
         this.referenceDate = referenceDate;
         this.validateSelf();
     }

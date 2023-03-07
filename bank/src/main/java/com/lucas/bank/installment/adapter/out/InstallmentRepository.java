@@ -1,11 +1,13 @@
 package com.lucas.bank.installment.adapter.out;
 
-import com.lucas.bank.shared.dynamoDb.DynamoDbWrapper;
+import com.lucas.bank.shared.dynamoDb.DynamoDbQueryWrapper;
 import org.springframework.stereotype.Component;
 
+import static com.lucas.bank.shared.StaticInformation.SINGLE_TABLE_NAME;
+
 @Component
-public class InstallmentRepository extends DynamoDbWrapper<InstallmentPOJO> {
+public class InstallmentRepository extends DynamoDbQueryWrapper<InstallmentDataPOJO> {
     public InstallmentRepository() {
-        super(InstallmentPOJO.class, "bank");
+        super(InstallmentDataPOJO.class);
     }
 }

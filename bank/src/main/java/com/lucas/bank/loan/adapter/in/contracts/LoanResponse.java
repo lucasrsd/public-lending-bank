@@ -18,8 +18,8 @@ public class LoanResponse {
     public BigDecimal amount;
     public String state;
     public Integer term;
-    public BigDecimal interestRate;
     public String interestFrequency;
+    public BigDecimal interestRate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     public Date creationDate;

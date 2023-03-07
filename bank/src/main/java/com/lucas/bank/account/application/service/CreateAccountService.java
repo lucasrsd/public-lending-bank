@@ -5,6 +5,7 @@ import com.lucas.bank.account.application.port.in.CreateAccountUseCase;
 import com.lucas.bank.account.application.port.out.CreateAccountPort;
 import com.lucas.bank.account.domain.Account;
 import com.lucas.bank.shared.adapters.UseCase;
+import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
@@ -16,7 +17,8 @@ public class CreateAccountService implements CreateAccountUseCase {
     private final CreateAccountPort createAccountPort;
 
     @Override
-    public Long createAccount(CreateAccountCommand command) {
+    public Account createAccount(CreateAccountCommand command, PersistenceTransactionManager persistenceTransactionManager) {
+
         var account = Account
                 .builder()
                 .accountId(null)
@@ -26,6 +28,8 @@ public class CreateAccountService implements CreateAccountUseCase {
                 .createdAt(new Date())
                 .build();
 
-        return createAccountPort.createAccount(account);
+        var result = createAccountPort.createAccount(account, persistenceTransactionManager);
+
+        return result;
     }
 }

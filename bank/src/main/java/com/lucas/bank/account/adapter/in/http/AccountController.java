@@ -4,8 +4,8 @@ import com.lucas.bank.account.adapter.in.contracts.CreateAccountRequest;
 import com.lucas.bank.account.adapter.in.contracts.CreateAccountResponse;
 import com.lucas.bank.account.application.port.in.CreateAccountUseCase;
 import com.lucas.bank.account.application.port.in.LoadAccountQuery;
-import com.lucas.bank.account.domain.Account;
 import com.lucas.bank.shared.adapters.WebAdapter;
+import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,8 +23,9 @@ public class AccountController {
 
     @PostMapping
     CreateAccountResponse createAccount(@Valid @RequestBody CreateAccountRequest request) {
-        var newAccountId = createAccountUseCase.createAccount(request.mapToCommand());
-        var account = loadAccountQuery.loadAccount(newAccountId);
+        var transaction = PersistenceTransactionManager.newPersistenceTransaction();
+        var account = createAccountUseCase.createAccount(request.mapToCommand(), transaction);
+        transaction.commit();
         return CreateAccountResponse.mapToResponse(account);
     }
 

@@ -18,7 +18,7 @@ public class AccrualService implements AccrualUseCase {
 
     @Override
     public BigDecimal calculateDailyAccrual(AccrualCommand command) {
-        var loan = loadLoanQuery.loadLoan(command.getLoanAccountId());
+        var loan = loadLoanQuery.loadLoan(command.getLoanId());
         var accrual = Accrual.builder().build();
         return accrual.dailyAccrual(loan.getLoan().getAmount(), loan.getLoan().getInterest());
     }

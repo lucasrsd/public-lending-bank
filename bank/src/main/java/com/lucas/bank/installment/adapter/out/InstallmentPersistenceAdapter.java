@@ -1,45 +1,40 @@
 package com.lucas.bank.installment.adapter.out;
 
+import com.lucas.bank.installment.application.port.out.UpdateInstallmentPort;
+import com.lucas.bank.loan.domain.AmortizationType;
 import com.lucas.bank.shared.adapters.PersistenceAdapter;
 import com.lucas.bank.installment.application.port.out.CreateInstallmentPort;
 import com.lucas.bank.installment.application.port.out.LoadInstallmentPort;
-import com.lucas.bank.installment.domain.AmortizationType;
 import com.lucas.bank.installment.domain.Installment;
+import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
 import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 
 @RequiredArgsConstructor
 @PersistenceAdapter
-class InstallmentPersistenceAdapter implements CreateInstallmentPort, LoadInstallmentPort {
+class InstallmentPersistenceAdapter implements CreateInstallmentPort, LoadInstallmentPort, UpdateInstallmentPort {
 
     private final InstallmentRepository installmentRepository;
     private final InstallmentMapper installmentMapper;
 
 
     @Override
-    public void createInstallment(AmortizationType amortizationType, Long loanId, List<Installment> installments) {
-        List<InstallmentPOJO> installmentPOJOS = new ArrayList<>();
-        installments.forEach(i -> installmentPOJOS.add(installmentMapper.mapToPOJO(amortizationType, loanId, i)));
-
-        installmentRepository.batchPut(installmentPOJOS);
+    public void createInstallment(AmortizationType amortizationType, Long loanId, List<Installment> installments, PersistenceTransactionManager persistenceTransactionManager) {
+        var installmentPOJO = installmentMapper.mapToPOJO(amortizationType, loanId, installments);
+        persistenceTransactionManager.addTransaction(installmentPOJO);
     }
 
     @Override
     public List<Installment> loadInstallments(Long loanId) {
-        List<Installment> installments = new ArrayList<>();
-        var installmentPOJO = installmentRepository.queryByPk(InstallmentPOJO.buildPk(loanId));
+        var installmentPOJO = installmentRepository.get(InstallmentDataPOJO.of(loanId));
+        return installmentMapper.mapToDomainEntity(installmentPOJO.getInstallments());
+    }
 
-        Collections.sort(installmentPOJO, Comparator.comparing(InstallmentPOJO::getNumber));
-
-        if (installmentPOJO != null && !installmentPOJO.isEmpty()) {
-            installmentPOJO.forEach(i -> installments.add(installmentMapper.mapToDomainEntity(i)));
-        }
-
-        return installments;
+    @Override
+    public void updateInstallments(Long loanId, AmortizationType amortizationType, List<Installment> installments, PersistenceTransactionManager persistenceTransactionManager) {
+        var installmentPOJO = installmentMapper.mapToPOJO(amortizationType, loanId, installments);
+        persistenceTransactionManager.addTransaction(installmentPOJO);
     }
 }

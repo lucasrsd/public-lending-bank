@@ -1,26 +1,32 @@
 package com.lucas.bank.loan.adapter.out;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.lucas.bank.account.adapter.out.AccountPOJO;
 import lombok.*;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
-@DynamoDbBean
+import static com.lucas.bank.shared.StaticInformation.SINGLE_TABLE_NAME;
+
+@DynamoDBTable(tableName = SINGLE_TABLE_NAME)
 @Getter
 @Setter
 @AllArgsConstructor
 @Builder
 public class LoanPOJO {
 
-    private static final String pkPrefix = "loan#";
-    private static final String skPrefix = "contract";
+    public static final String pkPrefix = "loan#";
+    public static final String skPrefix = "contract";
 
+    @DynamoDBHashKey
     private String pk;
+
+    @DynamoDBRangeKey
     private String sk;
+
 
     private Long loanId;
     private String type;
@@ -34,9 +40,12 @@ public class LoanPOJO {
     private Long disbursementDate;
     private List<String> additionalInformation;
     private Long lastAccrualDate;
-    private Integer batchBlock;
 
     public LoanPOJO() {
+    }
+
+    public static LoanPOJO of(Long loanId){
+        return LoanPOJO.builder().loanId(loanId).build();
     }
 
     public static String buildPk(Long loanId) {
@@ -47,12 +56,10 @@ public class LoanPOJO {
         return skPrefix;
     }
 
-    @DynamoDbPartitionKey
     public String getPk() {
         return buildPk(loanId);
     }
 
-    @DynamoDbSortKey
     public String getSk() {
         return buildSk();
     }

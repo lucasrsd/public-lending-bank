@@ -1,5 +1,6 @@
 package com.lucas.bank.installment.application.service;
 
+import com.lucas.bank.installment.application.port.out.InstallmentDetail;
 import com.lucas.bank.shared.adapters.UseCase;
 import com.lucas.bank.installment.application.port.in.LoadInstallmentsQuery;
 import com.lucas.bank.installment.application.port.out.InstallmentAggregate;
@@ -8,10 +9,7 @@ import com.lucas.bank.installment.domain.Installment;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @UseCase
@@ -30,10 +28,7 @@ public class LoadInstallmentsService implements LoadInstallmentsQuery {
                 .build();
     }
 
-    private List<String> details(List<Installment> installments) {
-        List<String> details = new ArrayList<>();
-
-
+    private InstallmentDetail details(List<Installment> installments) {
         BigDecimal principalSum = BigDecimal.ZERO;
         BigDecimal interestSum = BigDecimal.ZERO;
         BigDecimal installmentSum = BigDecimal.ZERO;
@@ -41,6 +36,7 @@ public class LoadInstallmentsService implements LoadInstallmentsQuery {
         Map<String, BigDecimal> taxesByType = new HashMap<>();
 
         for (Installment installment : installments) {
+
             principalSum = principalSum.add(installment.getPrincipalAmount());
             interestSum = interestSum.add(installment.getInterestAmount());
             installmentSum = installmentSum.add(installment.getInstallmentAmount());
@@ -57,14 +53,14 @@ public class LoadInstallmentsService implements LoadInstallmentsQuery {
             }
         }
 
-        details.add("Installments sum: " + installmentSum);
-        details.add("Principal sum: " + principalSum);
-        details.add("Interest sum: " + interestSum);
-        details.add("Taxes sum: " + taxesSum);
-
-        for (Map.Entry<String, BigDecimal> item : taxesByType.entrySet()) {
-            details.add("Tax type (" + item.getKey() + ") sum: " + item.getValue());
-        }
+        InstallmentDetail details = InstallmentDetail
+                .builder()
+                .installmentsTotalAmount(installmentSum)
+                .principalTotalAmount(principalSum)
+                .interestTotalAmount(interestSum)
+                .taxTotalAmount(taxesSum)
+                .taxes(taxesByType)
+                .build();
 
         return details;
     }

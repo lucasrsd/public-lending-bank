@@ -1,38 +1,51 @@
 # Lending bank
+#### This project is just a personal study, using all knowledge from public sources.
 
-** Playground project created for personal study.
-
-## Tech stack
-- Java Spring Boot
-- AWS Lambda
-- AWS DynamoDB
-- AWS SAM
-
-## Content
-
+## Features
 - Loan simulation
-- Installment simulation 
-- Interest rate conversion (daily, monthly and yearly)
+- Installment preview/calculation
 - Compound interest
-- PRICE and SAC amortization
-- Taxes -> IOF (Brazil)
-- Ledger account simulation
-- Journal transactions simulation
+- Convertible interest frequencies (daily, monthly, yearly)
+- PRICE and SAC amortizations
+- IOF tax (daily and additional)
+- Disbursement
+- Repayment
+- Transactions
+- Ledger accounts and journal transactions
 
-## Examples
+## Architecture proposal
+- Java Spring Boot
+- Hexagonal architecture
+- Distributed transactions
+- Distributed lock (e.g.: account id)
+- Single table design (DynamoDB)
+- Scalable and distributed batch processing
+## Infrastructure cost estimation per feature
+-- ToDo 
 
-### PRICE - $ 10.000 - 4 months - 11%/y
+--- 
+
+## Example 1
+
+- Amount: $ 10.000 
+- Term: 4 Months
+- Amortization: PRICE
+- Interest rate: 16.55 % / Year
+- Tax: IOF
+
 
 #### POST /api/loan
 ```json
 {
-  "accountId": 1676454452718,
+  "accountId": 1678226537787,
   "amount":  10000,
   "term": 4,
-  "interestRate": 11,
+  "interestRate": 16.55,
   "amortizationType": "PRICE",
-  "interestFrequency": "YEAR"
-}   
+  "interestFrequency": "YEAR",
+  "disbursementDate": "2023-03-07",
+  "tax": "IOF"
+}
 ```
 
 --- 
@@ -40,120 +53,138 @@
 ```json
 {
   "loan": {
-    "loanId": 1676928437981,
-    "accountId": 1676454452718,
+    "loanId": 1678227362143,
+    "accountId": 1678226537787,
     "type": "PRICE",
-    "amount": 10000,
+    "amount": 10101.33133672,
     "state": "DRAFT",
     "term": 4,
     "interestFrequency": "YEAR",
-    "interestRate": 11,
-    "creationDate": "2023-02-20T21:27:17.000Z",
-    "disbursementDate": "2023-02-20T21:27:16.000Z",
+    "interestRate": 16.55,
+    "creationDate": "2023-03-07T22:16:02.000Z",
+    "disbursementDate": "2023-03-07T00:00:00.000Z",
     "lastAccrualDate": null,
     "additionalInformation": [
-      "Daily interest: 0.02860000 %",
-      "Monthly interest: 0.87346000 %",
-      "Yearly interest: 11 %"
+      "Daily interest: 0.04197000 %",
+      "Monthly interest: 1.28443000 %",
+      "Yearly interest: 16.55 %"
     ]
   },
-  "installments": [], // See the table below
-  "installmentDetails": [
-    "Installments sum: 10219.31450426",
-    "Principal sum: 10000.00000000",
-    "Interest sum: 219.31450426",
-    "Taxes sum: 0"
-  ]
+  "installments": [
+    {
+      "number": 1,
+      "amortizationType": "PRICE",
+      "state": "PENDING",
+      "dueDate": "2023-04-07",
+      "paymentDate": null,
+      "principal": {
+        "amount": 2477.19606966,
+        "paid": 0
+      },
+      "interest": {
+        "amount": 129.74453009,
+        "paid": 0
+      },
+      "tax": {
+        "amount": 25.58953518,
+        "paid": 0
+      },
+      "installmentAmount": 2632.53013493,
+      "remainingBalance": 7624.13526706,
+      "taxComposition": {
+        "ADDITIONAL_IOF": 9.41334506,
+        "DAILY_IOF": 6.29703241
+      }
+    },
+    {
+      "number": 2,
+      "amortizationType": "PRICE",
+      "state": "PENDING",
+      "dueDate": "2023-05-08",
+      "paymentDate": null,
+      "principal": {
+        "amount": 2509.01391914,
+        "paid": 0
+      },
+      "interest": {
+        "amount": 97.92668061,
+        "paid": 0
+      },
+      "tax": {
+        "amount": 25.58953518,
+        "paid": 0
+      },
+      "installmentAmount": 2632.53013493,
+      "remainingBalance": 5115.12134792,
+      "taxComposition": {
+        "ADDITIONAL_IOF": 9.53425289,
+        "DAILY_IOF": 12.75582676
+      }
+    },
+    {
+      "number": 3,
+      "amortizationType": "PRICE",
+      "state": "PENDING",
+      "dueDate": "2023-06-07",
+      "paymentDate": null,
+      "principal": {
+        "amount": 2541.24044662,
+        "paid": 0
+      },
+      "interest": {
+        "amount": 65.70015313,
+        "paid": 0
+      },
+      "tax": {
+        "amount": 25.58953518,
+        "paid": 0
+      },
+      "installmentAmount": 2632.53013493,
+      "remainingBalance": 2573.8809013,
+      "taxComposition": {
+        "ADDITIONAL_IOF": 9.6567137,
+        "DAILY_IOF": 19.17111793
+      }
+    },
+    {
+      "number": 4,
+      "amortizationType": "PRICE",
+      "state": "PENDING",
+      "dueDate": "2023-07-07",
+      "paymentDate": null,
+      "principal": {
+        "amount": 2573.8809013,
+        "paid": 0
+      },
+      "interest": {
+        "amount": 33.05969846,
+        "paid": 0
+      },
+      "tax": {
+        "amount": 25.58953518,
+        "paid": 0
+      },
+      "installmentAmount": 2632.53013494,
+      "remainingBalance": 0,
+      "taxComposition": {
+        "ADDITIONAL_IOF": 9.78074742,
+        "DAILY_IOF": 25.74910454
+      }
+    }
+  ],
+  "installmentDetails": {
+    "installmentsTotalAmount": 10530.12053973,
+    "principalTotalAmount": 10101.33133672,
+    "interestTotalAmount": 326.43106229,
+    "taxesTotalAmount": 102.35814072,
+    "taxes": {
+      "ADDITIONAL_IOF": 38.38505907,
+      "DAILY_IOF": 63.97308164
+    }
+  }
 }
-```
-
-| number | amortizationType | state   | dueDate    | paymentDate | principalAmount | interestAmount | installmentAmount | taxAmount | remainingBalance | taxComposition |
-|--------|------------------|---------|------------|-------------|-----------------|----------------|-------------------|-----------|-----------------|----------------|
-| 1      | PRICE            | PENDING | 2023-03-20 |             | 2467.48262607   | 87.346         | 2554.82862607     |           | 7532.51737393   |                |
-| 2      | PRICE            | PENDING | 2023-04-20 |             | 2489.03509982   | 65.79352625    | 2554.82862607     |           | 5043.48227411   |                |
-| 3      | PRICE            | PENDING | 2023-05-22 |             | 2510.7758258    | 44.05280027    | 2554.82862607     |           | 2532.70644831   |                |
-| 4      | PRICE            | PENDING | 2023-06-20 |             | 2532.70644831   | 22.12217774    | 2554.82862605     |           |                 |                |
-
-
+``` 
 ---
-
-### PRICE - $ 20.000 - 24 months - 4%/m - IOF
-
-#### POST /api/loan
-```json
-{
-  "accountId": 1676454452718,
-  "amount":  20000,
-  "term": 24,
-  "interestRate": 4,
-  "amortizationType": "PRICE",
-  "interestFrequency": "MONTH",
-  "tax": "IOF"
-}   
-```
-
---- 
-
-```json
-{
-  "loan": {
-    "loanId": 1676928955182,
-    "accountId": 1676454452718,
-    "type": "PRICE",
-    "amount": 20577.50355819,
-    "state": "DRAFT",
-    "term": 24,
-    "interestFrequency": "MONTH",
-    "interestRate": 4,
-    "creationDate": "2023-02-20T21:35:55.000Z",
-    "disbursementDate": "2023-02-20T21:35:55.000Z",
-    "lastAccrualDate": null,
-    "additionalInformation": [
-      "Daily interest: 0.13082000 %",
-      "Monthly interest: 4 %",
-      "Yearly interest: 60.10322000 %"
-    ]
-  },
-  "installments": [], // See the table below
-  "installmentDetails": [
-    "Installments sum: 32984.89720254",
-    "Principal sum: 20577.50355819",
-    "Interest sum: 11813.21456814",
-    "Taxes sum: 594.17907621",
-    "Tax type (DAILY_IOF (0.000082)) sum: 515.98456268",
-    "Tax type (FIXED_IOF (0.0038)) sum: 78.19451353"
-  ]
-}
-```
-| number | amortizationType | state   | dueDate    | paymentDate | principalAmount | interestAmount | installmentAmount | taxAmount   | remainingBalance | taxComposition  |
-|--------|------------------|---------|------------|-------------|-----------------|----------------|-------------------|-------------|------------------|-----------------|
-| 1      | PRICE            | PENDING | 2023-03-20 |             | 526.51311294    | 823.10014233   | 1352.82287921     | 3.20962394  | 20050.99044525   | [object Object] |
-| 2      | PRICE            | PENDING | 2023-04-20 |             | 547.57363746    | 802.03961781   | 1354.34319635     | 4.72994108  | 19503.41680779   | [object Object] |
-| 3      | PRICE            | PENDING | 2023-05-22 |             | 569.47658296    | 780.13667231   | 1356.02670055     | 6.41344528  | 18933.94022483   | [object Object] |
-| 4      | PRICE            | PENDING | 2023-06-20 |             | 592.25564628    | 757.35760899   | 1357.69162229     | 8.07836702  | 18341.68457855   | [object Object] |
-| 5      | PRICE            | PENDING | 2023-07-20 |             | 615.94587213    | 733.66738314   | 1359.52998381     | 9.91672854  | 17725.73870642   | [object Object] |
-| 6      | PRICE            | PENDING | 2023-08-21 |             | 640.58370701    | 709.02954826   | 1361.6075446      | 11.99428933 | 17085.15499941   | [object Object] |
-| 7      | PRICE            | PENDING | 2023-09-20 |             | 666.20705529    | 683.40619998   | 1363.72618553     | 14.11293026 | 16418.94794412   | [object Object] |
-| 8      | PRICE            | PENDING | 2023-10-20 |             | 692.85533751    | 656.75791776   | 1365.99512687     | 16.3818716  | 15726.09260661   | [object Object] |
-| 9      | PRICE            | PENDING | 2023-11-20 |             | 720.56955101    | 629.04370426   | 1368.48208953     | 18.86883426 | 15005.5230556    | [object Object] |
-| 10     | PRICE            | PENDING | 2023-12-20 |             | 749.39233305    | 600.22092222   | 1371.08034805     | 21.46709278 | 14256.13072255   | [object Object] |
-| 11     | PRICE            | PENDING | 2024-01-22 |             | 779.36802637    | 570.2452289    | 1374.04800163     | 24.43474636 | 13476.76269618   | [object Object] |
-| 12     | PRICE            | PENDING | 2024-02-20 |             | 810.54274742    | 539.07050785   | 1376.95286214     | 27.33960687 | 12666.21994876   | [object Object] |
-| 13     | PRICE            | PENDING | 2024-03-20 |             | 842.96445732    | 506.64879795   | 1378.04644642     | 28.43319115 | 11823.25549144   | [object Object] |
-| 14     | PRICE            | PENDING | 2024-04-22 |             | 876.68303561    | 472.93021966   | 1379.18377407     | 29.5705188  | 10946.57245583   | [object Object] |
-| 15     | PRICE            | PENDING | 2024-05-20 |             | 911.75035704    | 437.86289823   | 1380.36659482     | 30.75333955 | 10034.82209879   | [object Object] |
-| 16     | PRICE            | PENDING | 2024-06-20 |             | 948.22037132    | 401.39288395   | 1381.59672839     | 31.98347312 | 9086.60172747    | [object Object] |
-| 17     | PRICE            | PENDING | 2024-07-22 |             | 986.14918617    | 363.4640691    | 1382.87606732     | 33.26281205 | 8100.4525413     | [object Object] |
-| 18     | PRICE            | PENDING | 2024-08-20 |             | 1025.59515362   | 324.01810165   | 1384.2065798      | 34.59332453 | 7074.85738768    | [object Object] |
-| 19     | PRICE            | PENDING | 2024-09-20 |             | 1066.61895976   | 282.99429551   | 1385.59031279     | 35.97705752 | 6008.23842792    | [object Object] |
-| 20     | PRICE            | PENDING | 2024-10-21 |             | 1109.28371815   | 240.32953712   | 1387.02939508     | 37.41613981 | 4898.95470977    | [object Object] |
-| 21     | PRICE            | PENDING | 2024-11-20 |             | 1153.65506688   | 195.95818839   | 1388.52604067     | 38.9127854  | 3745.29964289    | [object Object] |
-| 22     | PRICE            | PENDING | 2024-12-20 |             | 1199.80126955   | 149.81198572   | 1390.08255209     | 40.46929682 | 2545.49837334    | [object Object] |
-| 23     | PRICE            | PENDING | 2025-01-20 |             | 1247.79332034   | 101.81993493   | 1391.70132397     | 42.0880687  | 1297.705053      | [object Object] |
-| 24     | PRICE            | PENDING | 2025-02-20 |             | 1297.705053     | 51.90820212    | 1393.38484656     | 43.77159144 |                  | [object Object] |
-
----
-
 * Postman collection available
 
 ## Setup

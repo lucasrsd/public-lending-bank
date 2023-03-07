@@ -13,5 +13,5 @@ import java.util.List;
 public class InstallmentAggregate {
 
     private final List<Installment> installments;
-    private final List<String> details;
+    private final InstallmentDetail details;
 }

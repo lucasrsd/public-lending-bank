@@ -4,7 +4,6 @@ import com.lucas.bank.account.application.port.in.LoadAccountQuery;
 import com.lucas.bank.installment.domain.Installment;
 import com.lucas.bank.loan.domain.LoanState;
 import com.lucas.bank.loan.domain.AmortizationType;
-import com.lucas.bank.shared.BatchBlock;
 import com.lucas.bank.shared.adapters.UseCase;
 import com.lucas.bank.installment.application.port.in.CreateInstallmentCommand;
 import com.lucas.bank.installment.application.port.in.CreateInstallmentUseCase;
@@ -14,6 +13,7 @@ import com.lucas.bank.loan.application.port.in.CreateLoanCommand;
 import com.lucas.bank.loan.application.port.in.CreateLoanUseCase;
 import com.lucas.bank.loan.application.port.out.CreateLoanPort;
 import com.lucas.bank.loan.domain.Loan;
+import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
 import com.lucas.bank.taxes.application.port.in.CalculateTaxesCommand;
 import com.lucas.bank.taxes.application.port.in.CalculateTaxesUseCase;
 import com.lucas.bank.taxes.application.port.out.TaxAggregate;
@@ -41,7 +41,8 @@ public class CreateLoanService implements CreateLoanUseCase {
     }
 
     @Override
-    public Long createLoan(CreateLoanCommand command) {
+    public Long createLoan(CreateLoanCommand command, PersistenceTransactionManager persistenceTransactionManager) {
+
         Date disbursementDate = command.getDisbursementDate() == null
                 ? new Date()
                 : command.getDisbursementDate();
@@ -77,10 +78,9 @@ public class CreateLoanService implements CreateLoanUseCase {
                 .lastAccrualDate(null)
                 .creationDate(new Date())
                 .disbursementDate(disbursementDate)
-                .batchBlock(BatchBlock.next())
                 .build();
 
-        var createdLoan = createLoanPort.createLoan(loan);
+        var createdLoan = createLoanPort.createLoan(loan, persistenceTransactionManager);
 
         var createInstallmentCommand = CreateInstallmentCommand
                 .builder()
@@ -93,7 +93,7 @@ public class CreateLoanService implements CreateLoanUseCase {
                 .disbursementDate(disbursementDate)
                 .build();
 
-        createInstallmentUseCase.create(createInstallmentCommand);
+        createInstallmentUseCase.create(createInstallmentCommand, persistenceTransactionManager);
 
         return createdLoan;
     }

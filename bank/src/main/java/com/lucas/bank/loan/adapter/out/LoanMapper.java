@@ -24,16 +24,20 @@ public class LoanMapper {
                 .creationDate(DateTimeUtil.from(loanPOJO.getCreationDate()))
                 .disbursementDate(DateTimeUtil.from(loanPOJO.getDisbursementDate()))
                 .lastAccrualDate(DateTimeUtil.from(loanPOJO.getLastAccrualDate()))
-                .batchBlock(loanPOJO.getBatchBlock())
                 .additionalInformation(loanPOJO.getAdditionalInformation())
                 .build();
     }
 
     LoanPOJO mapToPOJO(Loan loan) {
-        var fakeId = new Date().getTime();
+
+        Long loanId = loan.getLoanId();
+
+        if (loanId == null){
+            loanId =  new Date().getTime();
+        }
         return LoanPOJO
                 .builder()
-                .loanId(fakeId)
+                .loanId(loanId)
                 .type(loan.getType().name())
                 .accountId(loan.getAccountId())
                 .amount(loan.getAmount())
@@ -44,9 +48,7 @@ public class LoanMapper {
                 .creationDate(DateTimeUtil.to(loan.getCreationDate()))
                 .disbursementDate(DateTimeUtil.to(loan.getDisbursementDate()))
                 .lastAccrualDate(DateTimeUtil.to(loan.getLastAccrualDate()))
-                .batchBlock(loan.getBatchBlock())
                 .additionalInformation(loan.getAdditionalInformation())
                 .build();
     }
-
 }

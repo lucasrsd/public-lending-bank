@@ -1,6 +1,7 @@
 package com.lucas.bank.loan.adapter.in.contracts;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.lucas.bank.shared.PayableAmount;
 import lombok.Builder;
 import lombok.Value;
 
@@ -22,10 +23,12 @@ public class InstallmentResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     public Date paymentDate;
 
-    public BigDecimal principalAmount;
-    public BigDecimal interestAmount;
+    public PayableAmount principal;
+    public PayableAmount interest;
+    public PayableAmount tax;
     public BigDecimal installmentAmount;
-    public BigDecimal taxAmount;
+
     public BigDecimal remainingBalance;
     public Map<String, BigDecimal> taxComposition;
+
 }

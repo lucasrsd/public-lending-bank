@@ -7,5 +7,6 @@ import lombok.*;
 @Builder
 public class LedgerAccount {
     private final Integer ledgerAccountId;
+    private final String name;
     private final AccountType accountType;
 }

@@ -16,7 +16,7 @@ Globals:
         POWERTOOLS_SERVICE_NAME: BankApi
         JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 # More info about tiered compilation https://aws.amazon.com/blogs/compute/optimizing-aws-lambda-function-performance-for-java/
         TABLE_NAME: !Ref BankDynamoDbTable
-
+        LOCK_TABLE_NAME: !Ref BankLockDynamoDbTable
 Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
@@ -39,6 +39,8 @@ Resources:
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
             TableName: !Ref BankDynamoDbTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankLockDynamoDbTable
       Events:
         ApiGateway:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -60,8 +62,8 @@ Resources:
           AttributeType: S
         - AttributeName: loanState
           AttributeType: S
-        - AttributeName: accountId
-          AttributeType: N
+        - AttributeName: ledgerEntryId
+          AttributeType: S
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
@@ -79,9 +81,26 @@ Resources:
               - batchBlock
               - loanId
             ProjectionType: INCLUDE
-        - IndexName: account-id-gsi
+        - IndexName: ledger-entries-gsi
           KeySchema:
-            - AttributeName: accountId
+            - AttributeName: ledgerEntryId
               KeyType: HASH
           Projection:
-            ProjectionType: KEYS_ONLY
+            NonKeyAttributes:
+              - loanId
+              - transactionDate
+              - transactionType
+            ProjectionType: INCLUDE
+
+  BankLockDynamoDbTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    Properties:
+      TableName: bank-lock
+      AttributeDefinitions:
+        - AttributeName: key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: key
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST

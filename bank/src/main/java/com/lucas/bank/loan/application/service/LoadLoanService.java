@@ -1,11 +1,16 @@
 package com.lucas.bank.loan.application.service;
 
+import com.lucas.bank.loan.application.port.out.LoanListAggregate;
+import com.lucas.bank.loan.domain.Loan;
+import com.lucas.bank.shared.Metadata;
 import com.lucas.bank.shared.adapters.UseCase;
 import com.lucas.bank.installment.application.port.in.LoadInstallmentsQuery;
 import com.lucas.bank.loan.application.port.in.LoadLoanQuery;
 import com.lucas.bank.loan.application.port.out.LoadLoanPort;
 import com.lucas.bank.loan.application.port.out.LoanAggregate;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @UseCase
@@ -26,4 +31,20 @@ public class LoadLoanService implements LoadLoanQuery {
                 .installments(installments)
                 .build();
     }
+    @Override
+    public LoanListAggregate listLoans(){
+        var loans = loadLoanPort.listLoans();
+
+        if (loans == null) return null;
+
+        for(Loan loan : loans){
+            loan.setAdditionalInformation(loan.getInterest().details());
+        }
+
+        return LoanListAggregate
+                .builder()
+                .loans(loans)
+                .build();
+    }
+
 }
