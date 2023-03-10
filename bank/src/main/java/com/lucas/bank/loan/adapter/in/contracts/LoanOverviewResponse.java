@@ -4,8 +4,8 @@ import com.lucas.bank.installment.application.port.out.InstallmentDetail;
 import com.lucas.bank.installment.domain.Installment;
 import com.lucas.bank.loan.application.port.out.LoanAggregate;
 import com.lucas.bank.loan.domain.Loan;
-import com.lucas.bank.shared.Metadata;
-import com.lucas.bank.shared.PayableAmount;
+import com.lucas.bank.shared.valueObjects.Metadata;
+import com.lucas.bank.shared.valueObjects.PayableAmount;
 import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +49,7 @@ public class LoanOverviewResponse {
                 .creationDate(loan.getCreationDate())
                 .disbursementDate(loan.getDisbursementDate())
                 .lastAccrualDate(loan.getLastAccrualDate())
+                .accruedInterest(loan.getAccruedInterest())
                 .additionalInformation(loan.getAdditionalInformation())
                 .build();
 

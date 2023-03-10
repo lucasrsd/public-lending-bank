@@ -2,6 +2,7 @@ package com.lucas.bank.loan.application.service;
 
 import com.lucas.bank.account.application.port.in.LoadAccountQuery;
 import com.lucas.bank.installment.domain.Installment;
+import com.lucas.bank.interest.application.port.in.AccrualUseCase;
 import com.lucas.bank.loan.domain.LoanState;
 import com.lucas.bank.loan.domain.AmortizationType;
 import com.lucas.bank.shared.adapters.UseCase;
@@ -14,13 +15,15 @@ import com.lucas.bank.loan.application.port.in.CreateLoanUseCase;
 import com.lucas.bank.loan.application.port.out.CreateLoanPort;
 import com.lucas.bank.loan.domain.Loan;
 import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
-import com.lucas.bank.taxes.application.port.in.CalculateTaxesCommand;
-import com.lucas.bank.taxes.application.port.in.CalculateTaxesUseCase;
-import com.lucas.bank.taxes.application.port.out.TaxAggregate;
-import com.lucas.bank.taxes.domain.InstallmentDetails;
+import com.lucas.bank.shared.util.DateTimeUtil;
+import com.lucas.bank.tax.application.port.in.CalculateTaxesCommand;
+import com.lucas.bank.tax.application.port.in.CalculateTaxesUseCase;
+import com.lucas.bank.tax.application.port.out.TaxAggregate;
+import com.lucas.bank.tax.domain.InstallmentDetails;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +37,7 @@ public class CreateLoanService implements CreateLoanUseCase {
     private final LoadAccountQuery loadAccountQuery;
     private final CreateInstallmentUseCase createInstallmentUseCase;
     private final CalculateTaxesUseCase calculateTaxesUseCase;
+    private final AccrualUseCase accrualUseCase;
 
     public static Loan of(Long accountId, String type, BigDecimal amount, BigDecimal interestRate, String interestFrequency, Integer term) {
         var interest = Interest.of(interestRate, InterestFrequency.valueOf(interestFrequency));
@@ -61,10 +65,21 @@ public class CreateLoanService implements CreateLoanUseCase {
         if (taxes == null) {
             totalAmount = command.getAmount();
         } else {
-            totalAmount = taxes != null ? command.getAmount().add(taxes.getTotalTax()) : command.getAmount();
+            totalAmount = command.getAmount().add(taxes.getTotalTax());
 
             // ToDo - use gross up
             taxes = calculateTaxesIfPresent(totalAmount, command.getTerm(), AmortizationType.valueOf(command.getAmortizationType()).name(), disbursementDate, command.getTax(), calculationInterestRate);
+        }
+
+        var daysFromDisbursement = ChronoUnit.DAYS.between(DateTimeUtil.convertToLocalDateTimeViaMilisecond(disbursementDate),
+                DateTimeUtil.convertToLocalDateTimeViaMilisecond(new Date()));
+
+        Date lastAccrualDate = null;
+        BigDecimal accruedInterest = null;
+
+        if(daysFromDisbursement > 0L){
+            accruedInterest = accrualUseCase.calculateDailyAccrual(totalAmount, interest, daysFromDisbursement);
+            lastAccrualDate = new Date();
         }
 
         var loan = Loan
@@ -75,7 +90,8 @@ public class CreateLoanService implements CreateLoanUseCase {
                 .state(LoanState.DRAFT)
                 .interest(interest)
                 .term(command.getTerm())
-                .lastAccrualDate(null)
+                .lastAccrualDate(lastAccrualDate)
+                .accruedInterest(accruedInterest)
                 .creationDate(new Date())
                 .disbursementDate(disbursementDate)
                 .build();

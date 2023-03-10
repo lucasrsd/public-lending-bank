@@ -1,9 +1,10 @@
 package com.lucas.bank.loan.adapter.out;
 
-import com.lucas.bank.shared.DateTimeUtil;
+import com.lucas.bank.shared.util.DateTimeUtil;
 import com.lucas.bank.interest.domain.Interest;
 import com.lucas.bank.interest.domain.InterestFrequency;
 import com.lucas.bank.loan.domain.*;
+import com.lucas.bank.shared.staticInformation.StaticInformation;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -24,17 +25,25 @@ public class LoanMapper {
                 .creationDate(DateTimeUtil.from(loanPOJO.getCreationDate()))
                 .disbursementDate(DateTimeUtil.from(loanPOJO.getDisbursementDate()))
                 .lastAccrualDate(DateTimeUtil.from(loanPOJO.getLastAccrualDate()))
+                .accruedInterest(loanPOJO.getAccruedInterest())
                 .additionalInformation(loanPOJO.getAdditionalInformation())
+                .batchBlock(loanPOJO.getBatchBlock())
                 .build();
     }
 
     LoanPOJO mapToPOJO(Loan loan) {
 
         Long loanId = loan.getLoanId();
+        Integer batchBlock = loan.getBatchBlock();
 
         if (loanId == null){
             loanId =  new Date().getTime();
         }
+
+        if (batchBlock == null){
+            batchBlock = StaticInformation.generateRandomBatchBlock();
+        }
+
         return LoanPOJO
                 .builder()
                 .loanId(loanId)
@@ -48,7 +57,9 @@ public class LoanMapper {
                 .creationDate(DateTimeUtil.to(loan.getCreationDate()))
                 .disbursementDate(DateTimeUtil.to(loan.getDisbursementDate()))
                 .lastAccrualDate(DateTimeUtil.to(loan.getLastAccrualDate()))
+                .accruedInterest(loan.getAccruedInterest())
                 .additionalInformation(loan.getAdditionalInformation())
+                .batchBlock(batchBlock)
                 .build();
     }
 }

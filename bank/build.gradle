@@ -34,6 +34,7 @@ dependencies {
 	implementation 'com.amazonaws:aws-java-sdk-lambda:1.11.321'
 	implementation 'com.amazonaws:aws-lambda-java-events:3.11.0'
 	implementation 'com.google.code.gson:gson:2.10.1'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.14.2'
 	compileOnly 'ch.obermuhlner:big-math:2.3.2'
 	implementation 'ch.obermuhlner:big-math:2.3.2'
 	compileOnly 'org.projectlombok:lombok'

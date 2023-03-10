@@ -1,6 +1,7 @@
 package com.lucas.bank.loan.adapter.out;
 
 import com.lucas.bank.loan.application.port.out.UpdateLoanPort;
+import com.lucas.bank.shared.staticInformation.StaticInformation;
 import com.lucas.bank.shared.adapters.PersistenceAdapter;
 import com.lucas.bank.loan.application.port.out.CreateLoanPort;
 import com.lucas.bank.loan.application.port.out.LoadLoanPort;
@@ -9,7 +10,9 @@ import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RequiredArgsConstructor
@@ -45,6 +48,19 @@ class LoanPersistenceAdapter implements CreateLoanPort, LoadLoanPort, UpdateLoan
         var loansPOJO = loanRepository.listByPkBeginsWithAndSk(LoanPOJO.pkPrefix, LoanPOJO.skPrefix);
         List<Loan> loans = new ArrayList<>();
         loansPOJO.forEach(i -> loans.add(loanMapper.mapToDomainEntity(i)));
+        return loans;
+    }
+
+    @Override
+    public Map<Long, String> listLoanByBatchBlock(Integer batchBlock, String status) {
+        var loansPOJO = loanRepository.scanIndexByBatchBlockAndStatus(StaticInformation.LOAN_STATE_GSI_INDEX, batchBlock, status);
+
+        Map<Long, String> loans = new HashMap<>();
+
+        for(LoanPOJO loan : loansPOJO){
+            loans.put(loan.getLoanId(), loan.getLoanState());
+        }
+
         return loans;
     }
 }

@@ -1,12 +1,9 @@
 package com.lucas.bank.loan.adapter.in.contracts;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.lucas.bank.shared.Metadata;
+import com.lucas.bank.shared.valueObjects.Metadata;
 import lombok.Builder;
 import lombok.Value;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 @Value

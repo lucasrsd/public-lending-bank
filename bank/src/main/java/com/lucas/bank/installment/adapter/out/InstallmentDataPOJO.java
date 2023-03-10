@@ -10,7 +10,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-import static com.lucas.bank.shared.StaticInformation.SINGLE_TABLE_NAME;
+import static com.lucas.bank.shared.staticInformation.StaticInformation.SINGLE_TABLE_NAME;
 
 @DynamoDBTable(tableName = SINGLE_TABLE_NAME)
 @Getter

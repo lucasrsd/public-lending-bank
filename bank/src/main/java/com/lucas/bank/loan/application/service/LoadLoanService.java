@@ -2,7 +2,6 @@ package com.lucas.bank.loan.application.service;
 
 import com.lucas.bank.loan.application.port.out.LoanListAggregate;
 import com.lucas.bank.loan.domain.Loan;
-import com.lucas.bank.shared.Metadata;
 import com.lucas.bank.shared.adapters.UseCase;
 import com.lucas.bank.installment.application.port.in.LoadInstallmentsQuery;
 import com.lucas.bank.loan.application.port.in.LoadLoanQuery;
@@ -10,7 +9,7 @@ import com.lucas.bank.loan.application.port.out.LoadLoanPort;
 import com.lucas.bank.loan.application.port.out.LoanAggregate;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @UseCase
@@ -45,6 +44,11 @@ public class LoadLoanService implements LoadLoanQuery {
                 .builder()
                 .loans(loans)
                 .build();
+    }
+
+    @Override
+    public Map<Long, String> listLoanByBatchBlock(Integer batchBlock, String status) {
+        return loadLoanPort.listLoanByBatchBlock(batchBlock, status);
     }
 
 }

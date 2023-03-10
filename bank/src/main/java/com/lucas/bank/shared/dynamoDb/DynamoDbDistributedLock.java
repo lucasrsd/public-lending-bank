@@ -4,7 +4,7 @@ import com.amazonaws.services.dynamodbv2.AcquireLockOptions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBLockClient;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBLockClientOptions;
 import com.amazonaws.services.dynamodbv2.LockItem;
-import com.lucas.bank.shared.StaticInformation;
+import com.lucas.bank.shared.staticInformation.StaticInformation;
 import com.lucas.bank.shared.adapters.DistributedLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +15,6 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-// ToDo - create generic error handling to release current ongoing locks
-// ToDo - Inject all classes, avoid new()
 @Component
 public class DynamoDbDistributedLock implements DistributedLock {
 
@@ -30,8 +28,8 @@ public class DynamoDbDistributedLock implements DistributedLock {
         this.lockClient = new AmazonDynamoDBLockClient(
                 AmazonDynamoDBLockClientOptions.builder(this.client, StaticInformation.LOCK_TABLE_NAME)
                         .withTimeUnit(TimeUnit.SECONDS)
-                        .withLeaseDuration(5L) // ToDo - review lock lease duration
-                        .withHeartbeatPeriod(1L) // ToDo - review lock lease duration
+                        .withLeaseDuration(6L)
+                        .withHeartbeatPeriod(2L)
                         .withCreateHeartbeatBackgroundThread(true)
                         .build());
     }

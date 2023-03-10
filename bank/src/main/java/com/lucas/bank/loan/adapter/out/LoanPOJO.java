@@ -3,13 +3,12 @@ package com.lucas.bank.loan.adapter.out;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.lucas.bank.account.adapter.out.AccountPOJO;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import static com.lucas.bank.shared.StaticInformation.SINGLE_TABLE_NAME;
+import static com.lucas.bank.shared.staticInformation.StaticInformation.SINGLE_TABLE_NAME;
 
 @DynamoDBTable(tableName = SINGLE_TABLE_NAME)
 @Getter
@@ -40,6 +39,8 @@ public class LoanPOJO {
     private Long disbursementDate;
     private List<String> additionalInformation;
     private Long lastAccrualDate;
+    private BigDecimal accruedInterest;
+    private Integer batchBlock;
 
     public LoanPOJO() {
     }

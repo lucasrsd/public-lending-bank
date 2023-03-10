@@ -5,7 +5,6 @@ import com.lucas.bank.interest.domain.Interest;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -24,13 +23,19 @@ public class Loan {
     private Date creationDate;
     private Date disbursementDate;
     private Date lastAccrualDate;
+    private BigDecimal accruedInterest;
     private List<String> additionalInformation;
+    private Integer batchBlock;
 
     public Boolean canDisburse() {
         return state.equals(LoanState.PENDING_DISBURSEMENT) || state.equals(LoanState.DRAFT);
     }
 
     public Boolean canRepay(){
+        return state.equals(LoanState.ACTIVE) || state.equals(LoanState.LATE);
+    }
+
+    public Boolean canAccrue(){
         return state.equals(LoanState.ACTIVE) || state.equals(LoanState.LATE);
     }
 }

@@ -1,6 +1,5 @@
 package com.lucas.bank.loan.application.port.in;
 
-import com.lucas.bank.installment.application.port.in.CreateInstallmentCommand;
 import com.lucas.bank.shared.SelfValidating;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -9,7 +8,6 @@ import lombok.Value;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 
 @Value
 @EqualsAndHashCode(callSuper = false)

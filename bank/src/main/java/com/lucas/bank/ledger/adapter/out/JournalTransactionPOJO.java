@@ -1,15 +1,12 @@
 package com.lucas.bank.ledger.adapter.out;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-
-import static com.lucas.bank.shared.StaticInformation.SINGLE_TABLE_NAME;
 
 @DynamoDBDocument
 @Getter

@@ -1,7 +1,7 @@
 package com.lucas.bank.account.adapter.out;
 
 import com.lucas.bank.account.domain.Account;
-import com.lucas.bank.shared.DateTimeUtil;
+import com.lucas.bank.shared.util.DateTimeUtil;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;

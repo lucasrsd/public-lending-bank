@@ -1,7 +1,7 @@
 package com.lucas.bank.loan.adapter.in.contracts;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.lucas.bank.shared.PayableAmount;
+import com.lucas.bank.shared.valueObjects.PayableAmount;
 import lombok.Builder;
 import lombok.Value;
 

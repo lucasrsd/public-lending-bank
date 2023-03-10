@@ -8,10 +8,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.Condition;
-import com.lucas.bank.shared.StaticInformation;
+import com.lucas.bank.shared.staticInformation.StaticInformation;
 import org.springframework.stereotype.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 import java.util.HashMap;
@@ -53,6 +51,20 @@ public class DynamoDbQueryWrapper<T> {
     public List<T> indexFullScan(String indexName) {
         DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
                 .withIndexName(indexName);
+
+        return mapper.scan(this.parserType, scanExpression);
+    }
+
+    public List<T> scanIndexByBatchBlockAndStatus(String indexName, Integer batchBlock, String status) {
+
+        Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+        eav.put(":batchBlock", new AttributeValue().withN(batchBlock.toString()));
+        eav.put(":loanState", new AttributeValue().withS(status));
+
+        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
+                .withIndexName(indexName)
+                .withFilterExpression("batchBlock = :batchBlock and loanState = :loanState")
+                .withExpressionAttributeValues(eav);
 
         return mapper.scan(this.parserType, scanExpression);
     }

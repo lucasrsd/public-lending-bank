@@ -28,7 +28,7 @@ public class CreateLoanRequest {
     public Integer term;
 
     @NotNull
-    @Digits(integer = 18, fraction = 8)
+    @Digits(integer = 18, fraction = 10)
     public BigDecimal interestRate;
 
     @NotNull

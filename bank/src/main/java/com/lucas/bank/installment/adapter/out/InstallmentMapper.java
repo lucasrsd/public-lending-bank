@@ -1,7 +1,7 @@
 package com.lucas.bank.installment.adapter.out;
 
 import com.lucas.bank.loan.domain.AmortizationType;
-import com.lucas.bank.shared.DateTimeUtil;
+import com.lucas.bank.shared.util.DateTimeUtil;
 import com.lucas.bank.installment.domain.*;
 import org.springframework.stereotype.Component;
 

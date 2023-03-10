@@ -11,5 +11,5 @@ import java.util.Map;
 @Builder
 @EqualsAndHashCode(callSuper = false)
 public class SummaryAggregate {
-    private final Map<Integer, BigDecimal> summary;
+    private final Map<String, BigDecimal> summary;
 }

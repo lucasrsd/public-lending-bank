@@ -16,10 +16,15 @@
 ## Architecture proposal
 - Java Spring Boot
 - Hexagonal architecture
-- Distributed transactions
 - Distributed lock (e.g.: account id)
+- Distributed batch
 - Single table design (DynamoDB)
 - Scalable and distributed batch processing
+
+## Distributed batch proposal
+
+![](docs/AccrualBatchProposal.jpg)
+
 ## Infrastructure cost estimation per feature
 -- ToDo 
 

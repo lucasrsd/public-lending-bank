@@ -1,10 +1,8 @@
 package com.lucas.bank.ledger.adapter.out;
 
 import com.lucas.bank.ledger.domain.*;
-import com.lucas.bank.shared.DateTimeUtil;
+import com.lucas.bank.shared.util.DateTimeUtil;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class LedgerMapper {

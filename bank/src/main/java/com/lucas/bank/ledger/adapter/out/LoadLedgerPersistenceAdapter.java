@@ -3,7 +3,7 @@ package com.lucas.bank.ledger.adapter.out;
 import com.lucas.bank.ledger.application.port.out.CreateLedgerPort;
 import com.lucas.bank.ledger.application.port.out.LoadLedgerPort;
 import com.lucas.bank.ledger.domain.Ledger;
-import com.lucas.bank.shared.StaticInformation;
+import com.lucas.bank.shared.staticInformation.StaticInformation;
 import com.lucas.bank.shared.adapters.PersistenceAdapter;
 import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +27,11 @@ class LoadLedgerPersistenceAdapter implements CreateLedgerPort, LoadLedgerPort {
     }
 
     @Override
-    public Map<Integer, BigDecimal> summarizeLedgerBalance() {
-        // ToDo - URGENT FULLY REFACTOR - just a experiment + initial accounting version
+    public Map<String, BigDecimal> summarizeLedgerBalance() {
+        // ToDo - URGENT FULLY REFACTOR - just an experiment + initial accounting version
         var ledgerEntries = ledgerRepository.indexFullScan(StaticInformation.LEDGER_ENTRIES_GSI_INDEX);
 
-        Map<Integer, BigDecimal> summary = new HashMap<>();
+        Map<String, BigDecimal> summary = new HashMap<>();
 
         for(LedgerPOJO ledger : ledgerEntries){
 
@@ -39,8 +39,8 @@ class LoadLedgerPersistenceAdapter implements CreateLedgerPort, LoadLedgerPort {
 
             if (entry == null) continue;
 
-            var creditAccountId = entry.getCredit().getLedgerAccountId();
-            var debitAccountId = entry.getDebit().getLedgerAccountId();
+            var creditAccountId = entry.getCredit().getLedgerAccountId().toString() + "_" + entry.getCredit().getAccountType() + "_" + entry.getCredit().getLedgerAccountName();
+            var debitAccountId = entry.getDebit().getLedgerAccountId().toString() + "_" + entry.getDebit().getAccountType() + "_" + entry.getDebit().getLedgerAccountName();
 
 
             if (summary.containsKey(creditAccountId)){

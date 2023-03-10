@@ -5,5 +5,5 @@ import java.util.Map;
 
 
 public interface LoadLedgerPort {
-    Map<Integer, BigDecimal> summarizeLedgerBalance();
+    Map<String, BigDecimal> summarizeLedgerBalance();
 }

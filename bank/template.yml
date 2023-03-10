@@ -15,8 +15,10 @@ Globals:
       Variables:
         POWERTOOLS_SERVICE_NAME: BankApi
         JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 # More info about tiered compilation https://aws.amazon.com/blogs/compute/optimizing-aws-lambda-function-performance-for-java/
-        TABLE_NAME: !Ref BankDynamoDbTable
-        LOCK_TABLE_NAME: !Ref BankLockDynamoDbTable
+        QUEUE_ARN_LOAN_ACCRUAL_EXTRACTION: !Ref LoanAccrualExtraction
+        QUEUE_ARN_LOAN_ACCRUAL: !Ref LoanAccrualQueue
+        QUEUE_ARN_LOAN_DAILY_BATCH_JOB: !Ref LoanDailyBatchJob
+
 Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
@@ -28,8 +30,10 @@ Resources:
           CreateUsagePlan: PER_API
           Description: Usage plan for this API
 
-  BankApiFunction:
+  ApiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Name: 'bank-api-gateway-function'
+    Description: 'API Gateway handler'
     Properties:
       CodeUri: .
       Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
@@ -49,6 +53,111 @@ Resources:
             Method: ANY
             RestApiId:
               Ref: ApiGatewayApi
+
+  BatchFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Name: 'bank-batch-function'
+    Description: 'Batch handler'
+    Properties:
+      CodeUri: .
+      Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Policies:
+        # Read more about SAM policy templates here
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - AWSLambdaExecute
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankDynamoDbTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankLockDynamoDbTable
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanDailyBatchJob.QueueName
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanAccrualExtraction.QueueName
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanAccrualQueue.QueueName
+      Events:
+        LoanDailyBatchJob:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt LoanDailyBatchJob.Arn
+
+  ExtractionFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Name: 'bank-batch-extraction-function'
+    Description: 'Publish messages for each batch block'
+    Properties:
+      CodeUri: .
+      Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Policies:
+        # Read more about SAM policy templates here
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - AWSLambdaExecute
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankDynamoDbTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankLockDynamoDbTable
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanDailyBatchJob.QueueName
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanAccrualExtraction.QueueName
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanAccrualQueue.QueueName
+      Events:
+        LoanAccrualBatchExtractionTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt LoanAccrualExtraction.Arn
+
+  LoanAccrualFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Name: 'bank-loan-accrual-function'
+    Description: 'Loan interest accrual'
+    Properties:
+      CodeUri: .
+      Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Policies:
+        # Read more about SAM policy templates here
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - AWSLambdaExecute
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankDynamoDbTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankLockDynamoDbTable
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanDailyBatchJob.QueueName
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanAccrualExtraction.QueueName
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanAccrualQueue.QueueName
+      Events:
+        LoanAccrualTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt LoanAccrualQueue.Arn
+
+  LoanDailyBatchJob:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: 'loan-daily-batch-job-queue'
+
+  LoanAccrualExtraction:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: 'loan-accrual-extraction-queue'
+
+  LoanAccrualQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: 'loan-accrual-queue'
 
   BankDynamoDbTable:
     Type: AWS::DynamoDB::Table

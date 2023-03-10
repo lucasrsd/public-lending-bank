@@ -3,13 +3,12 @@ package com.lucas.bank.ledger.adapter.out;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.lucas.bank.installment.adapter.out.InstallmentDataPOJO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import static com.lucas.bank.shared.StaticInformation.SINGLE_TABLE_NAME;
+import static com.lucas.bank.shared.staticInformation.StaticInformation.SINGLE_TABLE_NAME;
 
 @DynamoDBTable(tableName = SINGLE_TABLE_NAME)
 @Getter

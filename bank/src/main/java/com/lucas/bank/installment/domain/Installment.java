@@ -1,8 +1,8 @@
 package com.lucas.bank.installment.domain;
 
 import com.lucas.bank.loan.domain.AmortizationType;
-import com.lucas.bank.shared.StaticInformation;
-import com.lucas.bank.taxes.application.port.out.TaxAggregate;
+import com.lucas.bank.shared.staticInformation.StaticInformation;
+import com.lucas.bank.tax.application.port.out.TaxAggregate;
 import lombok.*;
 
 import java.math.BigDecimal;

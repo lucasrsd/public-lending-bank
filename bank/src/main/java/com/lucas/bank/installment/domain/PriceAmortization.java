@@ -1,15 +1,15 @@
 package com.lucas.bank.installment.domain;
 
 import com.lucas.bank.loan.domain.AmortizationType;
-import com.lucas.bank.shared.DateTimeUtil;
-import com.lucas.bank.taxes.application.port.out.TaxAggregate;
+import com.lucas.bank.shared.util.DateTimeUtil;
+import com.lucas.bank.tax.application.port.out.TaxAggregate;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
-import static com.lucas.bank.shared.StaticInformation.PRECISION_SCALE;
+import static com.lucas.bank.shared.staticInformation.StaticInformation.PRECISION_SCALE;
 
 @Getter
 @Setter

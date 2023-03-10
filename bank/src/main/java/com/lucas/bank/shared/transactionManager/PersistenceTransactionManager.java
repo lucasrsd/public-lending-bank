@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-// ToDo (Important) - Remove all news()
-
 @RequiredArgsConstructor
 @Component
 public class PersistenceTransactionManager {

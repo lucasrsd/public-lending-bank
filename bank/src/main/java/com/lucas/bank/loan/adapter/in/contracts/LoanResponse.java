@@ -29,5 +29,6 @@ public class LoanResponse {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     public Date lastAccrualDate;
+    public BigDecimal accruedInterest;
     public List<String> additionalInformation;
 }

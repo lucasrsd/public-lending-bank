@@ -13,10 +13,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.lucas.bank.shared.StaticInformation.MONTH_PERIOD;
-import static com.lucas.bank.shared.StaticInformation.DAY_TO_YEAR_PERIOD;
-import static com.lucas.bank.shared.StaticInformation.YEAR_TO_MONTH_PERIOD;
-import static com.lucas.bank.shared.StaticInformation.PRECISION_SCALE;
+import static com.lucas.bank.shared.staticInformation.StaticInformation.MONTH_PERIOD;
+import static com.lucas.bank.shared.staticInformation.StaticInformation.DAY_TO_YEAR_PERIOD;
+import static com.lucas.bank.shared.staticInformation.StaticInformation.YEAR_TO_MONTH_PERIOD;
+import static com.lucas.bank.shared.staticInformation.StaticInformation.PRECISION_SCALE;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Data
@@ -79,6 +79,12 @@ public class Interest {
         }
 
         if (interest.frequency == InterestFrequency.YEAR && target == InterestFrequency.MONTH) {
+
+            // possible fix - move from year to day and then * 30
+            //var daily = interest.getRateToCalculate().divide(new BigDecimal(DAY_TO_YEAR_PERIOD), RoundingMode.HALF_DOWN);
+            //var month = daily.multiply(new BigDecimal(30));
+
+            //ToDo - This conversion is wrong - review
             var parsedRate = withStaticDecimal(1).add(interest.getRateToCalculate());
             var multiplier = withStaticDecimal(1).divide(new BigDecimal(YEAR_TO_MONTH_PERIOD.toString()), RoundingMode.HALF_DOWN);
             var res = BigDecimalMath.pow(parsedRate, multiplier, mathContext);

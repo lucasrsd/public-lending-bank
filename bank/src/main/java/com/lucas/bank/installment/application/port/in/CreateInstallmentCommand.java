@@ -1,8 +1,7 @@
 package com.lucas.bank.installment.application.port.in;
 
-import com.lucas.bank.account.application.port.in.CreateAccountCommand;
 import com.lucas.bank.shared.SelfValidating;
-import com.lucas.bank.taxes.application.port.out.TaxAggregate;
+import com.lucas.bank.tax.application.port.out.TaxAggregate;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
