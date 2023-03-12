@@ -3,10 +3,13 @@ package com.lucas.bank.ledger.adapter.out;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.lucas.bank.ledger.domain.AccountType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 
 import static com.lucas.bank.shared.staticInformation.StaticInformation.SINGLE_TABLE_NAME;
 
@@ -17,8 +20,8 @@ import static com.lucas.bank.shared.staticInformation.StaticInformation.SINGLE_T
 @Builder
 public class LedgerPOJO {
 
-    public static final String pkPrefix = "loan#";
-    public static final String skPrefix = "ledger-entry#";
+    public static final String pkPrefix = "ledger#";
+    public static final String skPrefix = "loan#";
 
     @DynamoDBHashKey
     private String pk;
@@ -26,33 +29,34 @@ public class LedgerPOJO {
     @DynamoDBRangeKey
     private String sk;
 
-    private String ledgerEntryId;
+    private String ledgerTransactionEntryId;
     private Long loanId;
-    private String transactionType;
-    private JournalTransactionPOJO credit;
-    private JournalTransactionPOJO debit;
-    private Long transactionDate;
+    private Long ledgerTransactionId;
+    private String ledgerTransactionType;
+    private String ledgerTransactionSide;
+    private BigDecimal ledgerTransactionAmount;
+    private Integer ledgerAccountId;
+    private String ledgerAccountName;
+    private String ledgerAccountType;
+    private Long ledgerDate;
+    private Long ledgerBookingDate;
 
     public LedgerPOJO() {
     }
 
-    public static LedgerPOJO of(Long loanId, String entryId){
-        return LedgerPOJO.builder().loanId(loanId).ledgerEntryId(entryId).build();
+    public static String buildPk(String ledgerTransactionEntryId) {
+        return pkPrefix + ledgerTransactionEntryId;
     }
 
-    public static String buildPk(Long loanId) {
-        return pkPrefix + loanId;
-    }
-
-    public static String buildSk(String ledgerEntryId) {
-        return skPrefix + ledgerEntryId;
+    public static String buildSk(Long loanId, Long transactionId) {
+        return skPrefix + loanId + "#" + transactionId;
     }
 
     public String getPk() {
-        return buildPk(loanId);
+        return buildPk(ledgerTransactionEntryId);
     }
 
     public String getSk() {
-        return buildSk(ledgerEntryId);
+        return buildSk(loanId, ledgerTransactionId);
     }
 }

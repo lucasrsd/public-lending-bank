@@ -1,5 +1,6 @@
 package com.lucas.bank.loan.adapter.out;
 
+import com.lucas.bank.shared.adapters.AtomicCounter;
 import com.lucas.bank.shared.util.DateTimeUtil;
 import com.lucas.bank.interest.domain.Interest;
 import com.lucas.bank.interest.domain.InterestFrequency;
@@ -32,21 +33,9 @@ public class LoanMapper {
     }
 
     LoanPOJO mapToPOJO(Loan loan) {
-
-        Long loanId = loan.getLoanId();
-        Integer batchBlock = loan.getBatchBlock();
-
-        if (loanId == null){
-            loanId =  new Date().getTime();
-        }
-
-        if (batchBlock == null){
-            batchBlock = StaticInformation.generateRandomBatchBlock();
-        }
-
         return LoanPOJO
                 .builder()
-                .loanId(loanId)
+                .loanId(loan.getLoanId())
                 .type(loan.getType().name())
                 .accountId(loan.getAccountId())
                 .amount(loan.getAmount())
@@ -59,7 +48,7 @@ public class LoanMapper {
                 .lastAccrualDate(DateTimeUtil.to(loan.getLastAccrualDate()))
                 .accruedInterest(loan.getAccruedInterest())
                 .additionalInformation(loan.getAdditionalInformation())
-                .batchBlock(batchBlock)
+                .batchBlock(loan.getBatchBlock())
                 .build();
     }
 }

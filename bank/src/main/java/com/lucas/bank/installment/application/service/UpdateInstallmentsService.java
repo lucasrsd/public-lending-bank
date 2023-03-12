@@ -5,7 +5,7 @@ import com.lucas.bank.installment.application.port.out.UpdateInstallmentPort;
 import com.lucas.bank.installment.domain.Installment;
 import com.lucas.bank.loan.application.port.in.LoadLoanQuery;
 import com.lucas.bank.shared.adapters.UseCase;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -18,8 +18,8 @@ public class UpdateInstallmentsService implements UpdateInstallmentUseCase {
     private final LoadLoanQuery loadLoanQuery;
 
     @Override
-    public void updateInstallments(Long loanId, List<Installment> installments, PersistenceTransactionManager persistenceTransactionManager) {
+    public void updateInstallments(Long loanId, List<Installment> installments, UnitOfWork unitOfWork) {
         var loan = loadLoanQuery.loadLoan(loanId);
-        updateInstallmentPort.updateInstallments(loanId, loan.getLoan().getType(), installments, persistenceTransactionManager);
+        updateInstallmentPort.updateInstallments(loanId, loan.getLoan().getType(), installments, unitOfWork);
     }
 }

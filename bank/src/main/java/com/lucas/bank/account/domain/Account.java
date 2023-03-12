@@ -10,9 +10,9 @@ import java.util.Date;
 @Builder
 public class Account {
 
-    private final Long accountId;
-    private final String holderName;
-    private final Date holderBirthDate;
-    private final Boolean active;
-    private final Date createdAt;
+    private Long accountId;
+    private String holderName;
+    private Date holderBirthDate;
+    private Boolean active;
+    private Date createdAt;
 }

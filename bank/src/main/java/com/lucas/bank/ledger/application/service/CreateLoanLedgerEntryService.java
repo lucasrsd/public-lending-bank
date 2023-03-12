@@ -1,23 +1,18 @@
 package com.lucas.bank.ledger.application.service;
 
 import com.google.gson.Gson;
-import com.lucas.bank.ledger.application.port.in.CreateLedgerEntryCommand;
 import com.lucas.bank.ledger.application.port.in.CreateLoanLedgerEntryUseCase;
 import com.lucas.bank.ledger.application.port.out.CreateLedgerPort;
 import com.lucas.bank.ledger.application.port.out.LedgerAggregate;
 import com.lucas.bank.ledger.domain.Ledger;
-import com.lucas.bank.ledger.domain.JournalTransaction;
-import com.lucas.bank.ledger.domain.OperationType;
 import com.lucas.bank.shared.staticInformation.StaticLedgerAccounts;
 import com.lucas.bank.shared.adapters.UseCase;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @UseCase
@@ -27,168 +22,90 @@ public class CreateLoanLedgerEntryService implements CreateLoanLedgerEntryUseCas
     private final CreateLedgerPort createLedgerPort;
 
     @Override
-    public LedgerAggregate disbursement(Long loanId, BigDecimal amount, PersistenceTransactionManager persistenceTransactionManager) {
+    public LedgerAggregate disbursement(Long loanId, Long transactionId, BigDecimal amount, UnitOfWork unitOfWork) {
 
-        var ledgerCommand = CreateLedgerEntryCommand
-                .builder()
-                .loanId(loanId)
-                .bookingDate(new Date())
-                .transactionDate(new Date())
-                .transactionType("LOAN_DISBURSEMENT")
-                .debitAmount(amount.negate())
-                .ledgerDebitAccount(StaticLedgerAccounts.LOAN_PORTFOLIO)
-                .creditAmount(amount)
-                .ledgerCreditAccount(StaticLedgerAccounts.LOAN_SOURCE)
-                .build();
+        var transactionName = "LOAN_DISBURSEMENT";
+        var debitAccount = StaticLedgerAccounts.LOAN_PORTFOLIO;
+        var creditAccount = StaticLedgerAccounts.LOAN_SOURCE;
 
-        return create(ledgerCommand, persistenceTransactionManager);
+        var debitLedger = Ledger.forDebit(loanId, transactionId, transactionName, amount, debitAccount);
+        var creditLedger = Ledger.forCredit(loanId, transactionId, transactionName, amount, creditAccount);
+
+        return create(debitLedger, creditLedger, unitOfWork);
     }
 
     @Override
-    public LedgerAggregate interestApplied(Long loanId, BigDecimal amount, PersistenceTransactionManager persistenceTransactionManager) {
+    public LedgerAggregate interestApplied(Long loanId, Long transactionId, BigDecimal amount, UnitOfWork unitOfWork) {
 
-        var ledgerCommand = CreateLedgerEntryCommand
-                .builder()
-                .loanId(loanId)
-                .bookingDate(new Date())
-                .transactionDate(new Date())
-                .transactionType("LOAN_INTEREST_APPLIED")
-                .debitAmount(amount.negate())
-                .ledgerDebitAccount(StaticLedgerAccounts.LOAN_INTEREST_RECEIVABLE)
-                .creditAmount(amount)
-                .ledgerCreditAccount(StaticLedgerAccounts.LOAN_INTEREST_INCOME)
-                .build();
+        var transactionName = "LOAN_INTEREST_APPLIED";
+        var debitAccount = StaticLedgerAccounts.LOAN_INTEREST_RECEIVABLE;
+        var creditAccount = StaticLedgerAccounts.LOAN_INTEREST_INCOME;
 
-        return create(ledgerCommand, persistenceTransactionManager);
+        var debitLedger = Ledger.forDebit(loanId, transactionId, transactionName, amount, debitAccount);
+        var creditLedger = Ledger.forCredit(loanId, transactionId, transactionName, amount, creditAccount);
+
+        return create(debitLedger, creditLedger, unitOfWork);
     }
 
     @Override
-    public LedgerAggregate taxApplied(Long loanId, BigDecimal amount, PersistenceTransactionManager persistenceTransactionManager) {
+    public LedgerAggregate taxApplied(Long loanId, Long transactionId, BigDecimal amount, UnitOfWork unitOfWork) {
 
-        var ledgerCommand = CreateLedgerEntryCommand
-                .builder()
-                .loanId(loanId)
-                .bookingDate(new Date())
-                .transactionDate(new Date())
-                .transactionType("LOAN_TAX_APPLIED")
-                .debitAmount(amount.negate())
-                .ledgerDebitAccount(StaticLedgerAccounts.LOAN_TAX_RECEIVABLE)
-                .creditAmount(amount)
-                .ledgerCreditAccount(StaticLedgerAccounts.LOAN_TAX_PAYABLE)
-                .build();
+        var transactionName = "LOAN_TAX_APPLIED";
+        var debitAccount = StaticLedgerAccounts.LOAN_TAX_RECEIVABLE;
+        var creditAccount = StaticLedgerAccounts.LOAN_TAX_PAYABLE;
 
-        return create(ledgerCommand, persistenceTransactionManager);
+        var debitLedger = Ledger.forDebit(loanId, transactionId, transactionName, amount, debitAccount);
+        var creditLedger = Ledger.forCredit(loanId, transactionId, transactionName, amount, creditAccount);
+
+        return create(debitLedger, creditLedger, unitOfWork);
     }
 
     @Override
-    public LedgerAggregate principalRepayment(Long loanId, BigDecimal affectedPrincipal,PersistenceTransactionManager persistenceTransactionManager) {
+    public LedgerAggregate principalRepayment(Long loanId, Long transactionId, BigDecimal affectedPrincipal, UnitOfWork unitOfWork) {
 
-        var ledgerCommand = CreateLedgerEntryCommand
-                .builder()
-                .loanId(loanId)
-                .bookingDate(new Date())
-                .transactionDate(new Date())
-                .transactionType("LOAN_REPAYMENT_PRINCIPAL")
-                .debitAmount(affectedPrincipal.negate())
-                .ledgerDebitAccount(StaticLedgerAccounts.LOAN_SOURCE)
-                .creditAmount(affectedPrincipal)
-                .ledgerCreditAccount(StaticLedgerAccounts.LOAN_PORTFOLIO)
-                .build();
+        var transactionName = "LOAN_REPAYMENT_PRINCIPAL";
+        var debitAccount = StaticLedgerAccounts.LOAN_SOURCE;
+        var creditAccount = StaticLedgerAccounts.LOAN_PORTFOLIO;
 
-        return create(ledgerCommand, persistenceTransactionManager);
+        var debitLedger = Ledger.forDebit(loanId, transactionId, transactionName, affectedPrincipal, debitAccount);
+        var creditLedger = Ledger.forCredit(loanId, transactionId, transactionName, affectedPrincipal, creditAccount);
+
+        return create(debitLedger, creditLedger, unitOfWork);
     }
 
     @Override
-    public LedgerAggregate interestRepayment(Long loanId, BigDecimal affectedInterest, PersistenceTransactionManager persistenceTransactionManager) {
+    public LedgerAggregate interestRepayment(Long loanId, Long transactionId, BigDecimal affectedInterest, UnitOfWork unitOfWork) {
 
-        var ledgerCommand = CreateLedgerEntryCommand
-                .builder()
-                .loanId(loanId)
-                .bookingDate(new Date())
-                .transactionDate(new Date())
-                .transactionType("LOAN_REPAYMENT_INTEREST")
-                .debitAmount(affectedInterest.negate())
-                .ledgerDebitAccount(StaticLedgerAccounts.LOAN_SOURCE)
-                .creditAmount(affectedInterest)
-                .ledgerCreditAccount(StaticLedgerAccounts.LOAN_INTEREST_RECEIVABLE)
-                .build();
+        var transactionName = "LOAN_REPAYMENT_INTEREST";
+        var debitAccount = StaticLedgerAccounts.LOAN_SOURCE;
+        var creditAccount = StaticLedgerAccounts.LOAN_INTEREST_RECEIVABLE;
 
-        return create(ledgerCommand, persistenceTransactionManager);
+        var debitLedger = Ledger.forDebit(loanId, transactionId, transactionName, affectedInterest, debitAccount);
+        var creditLedger = Ledger.forCredit(loanId, transactionId, transactionName, affectedInterest, creditAccount);
+
+        return create(debitLedger, creditLedger, unitOfWork);
     }
 
     @Override
-    public LedgerAggregate taxRepayment(Long loanId, BigDecimal affectedTax, PersistenceTransactionManager persistenceTransactionManager) {
+    public LedgerAggregate taxRepayment(Long loanId, Long transactionId, BigDecimal affectedTax, UnitOfWork unitOfWork) {
 
-        var ledgerCommand = CreateLedgerEntryCommand
-                .builder()
-                .loanId(loanId)
-                .bookingDate(new Date())
-                .transactionDate(new Date())
-                .transactionType("LOAN_REPAYMENT_TAX")
-                .debitAmount(affectedTax.negate())
-                .ledgerDebitAccount(StaticLedgerAccounts.LOAN_SOURCE)
-                .creditAmount(affectedTax)
-                .ledgerCreditAccount(StaticLedgerAccounts.LOAN_TAXES_RECEIVABLE)
-                .build();
+        var transactionName = "LOAN_REPAYMENT_TAX";
+        var debitAccount = StaticLedgerAccounts.LOAN_SOURCE;
+        var creditAccount = StaticLedgerAccounts.LOAN_TAXES_RECEIVABLE;
 
-        return create(ledgerCommand, persistenceTransactionManager);
+        var debitLedger = Ledger.forDebit(loanId, transactionId, transactionName, affectedTax, debitAccount);
+        var creditLedger = Ledger.forCredit(loanId, transactionId, transactionName, affectedTax, creditAccount);
+
+        return create(debitLedger, creditLedger, unitOfWork);
     }
 
-    private LedgerAggregate create(CreateLedgerEntryCommand command, PersistenceTransactionManager persistenceTransactionManager){
-        var ledger = toLedger(command);
+    private LedgerAggregate create(Ledger debitLedger, Ledger creditLedger, UnitOfWork unitOfWork){
+        createLedgerPort.createEntry(debitLedger, unitOfWork);
+        createLedgerPort.createEntry(creditLedger, unitOfWork);
 
-        createLedgerPort.createEntry(ledger, persistenceTransactionManager);
+        LOG.info("Debit ledger result {}", new Gson().toJson(debitLedger));
+        LOG.info("Debit ledger result {}", new Gson().toJson(creditLedger));
 
-        LOG.info("Journal entry result {}", new Gson().toJson(ledger));
-
-        return LedgerAggregate.builder().ledger(ledger).build();
-    }
-
-    private Ledger toLedger(CreateLedgerEntryCommand command){
-        // ToDo - Think of splitting ledger and entries to different entities (not child object)
-
-        if (command.getDebitAmount().compareTo(BigDecimal.ZERO) == 0){
-            throw new RuntimeException("Ledger debit transaction should be greater than 0");
-        }
-
-        if (command.getCreditAmount().compareTo(BigDecimal.ZERO) == 0){
-            throw new RuntimeException("Ledger credit transaction should be greater than 0");
-        }
-
-        if (command.getDebitAmount().add(command.getCreditAmount()).compareTo(BigDecimal.ZERO) != 0){
-            throw new RuntimeException("Credit and debit amount should summarize 0");
-        }
-
-        var creditTransaction = JournalTransaction
-                .builder()
-                .journalTransactionId(UUID.randomUUID().toString())
-                .operationType(OperationType.CREDIT)
-                .bookingDate(command.getBookingDate())
-                .transactionDate(command.getTransactionDate())
-                .ledgerAccount(command.getLedgerCreditAccount())
-                .amount(command.getCreditAmount())
-                .build();
-
-        var debitTransaction = JournalTransaction
-                .builder()
-                .journalTransactionId(UUID.randomUUID().toString())
-                .operationType(OperationType.DEBIT)
-                .bookingDate(command.getBookingDate())
-                .transactionDate(command.getTransactionDate())
-                .ledgerAccount(command.getLedgerDebitAccount())
-                .amount(command.getDebitAmount())
-                .build();
-
-        var ledger = Ledger
-                .builder()
-                .ledgerEntryId(UUID.randomUUID().toString())
-                .transactionDate(command.getTransactionDate())
-                .credit(creditTransaction)
-                .debit(debitTransaction)
-                .loanId(command.getLoanId())
-                .transactionType(command.getTransactionType())
-                .build();
-
-        return ledger;
+        return LedgerAggregate.builder().debit(debitLedger).credit(creditLedger).build();
     }
 }

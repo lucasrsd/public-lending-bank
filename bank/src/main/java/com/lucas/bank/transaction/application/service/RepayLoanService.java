@@ -6,7 +6,7 @@ import com.lucas.bank.ledger.application.port.in.CreateLoanLedgerEntryUseCase;
 import com.lucas.bank.loan.application.port.in.LoadLoanQuery;
 import com.lucas.bank.loan.application.port.in.LoanTransactionUseCase;
 import com.lucas.bank.shared.adapters.UseCase;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import com.lucas.bank.transaction.application.port.in.RepayLoanUseCase;
 import com.lucas.bank.transaction.application.port.out.CreateTransactionPort;
 import com.lucas.bank.transaction.domain.Transaction;
@@ -27,7 +27,7 @@ public class RepayLoanService implements RepayLoanUseCase {
     private final CreateLoanLedgerEntryUseCase createLoanLedgerEntryUseCase;
 
     @Override
-    public List<Installment> repayment(Long loanId, BigDecimal amount, PersistenceTransactionManager persistenceTransactionManager) {
+    public List<Installment> repayment(Long loanId, BigDecimal amount, UnitOfWork unitOfWork) {
 
         var loan = loadLoanQuery.loadLoan(loanId);
 
@@ -41,17 +41,17 @@ public class RepayLoanService implements RepayLoanUseCase {
 
         var newInstallments = installmentRepaymentUseCase.calculateRepayment(loan.getInstallments().getInstallments(), amount);
 
-        loanTransactionUseCase.makeRepayment(loanId, newInstallments.getInstallments(), persistenceTransactionManager);
-        createTransactionPort.createTransaction(Transaction.withoutId(TransactionType.REPAYMENT, loanId, amount), persistenceTransactionManager);
+        loanTransactionUseCase.makeRepayment(loanId, newInstallments.getInstallments(), unitOfWork);
+        var transaction = createTransactionPort.createTransaction(Transaction.withoutId(TransactionType.REPAYMENT, loanId, amount), unitOfWork);
 
         if (newInstallments.getAffectedPrincipal().compareTo(BigDecimal.ZERO) > 0)
-            createLoanLedgerEntryUseCase.principalRepayment(loanId, newInstallments.getAffectedPrincipal(), persistenceTransactionManager);
+            createLoanLedgerEntryUseCase.principalRepayment(loanId, transaction, newInstallments.getAffectedPrincipal(), unitOfWork);
 
         if (newInstallments.getAffectedInterest().compareTo(BigDecimal.ZERO) > 0)
-            createLoanLedgerEntryUseCase.interestRepayment(loanId, newInstallments.getAffectedInterest(), persistenceTransactionManager);
+            createLoanLedgerEntryUseCase.interestRepayment(loanId, transaction, newInstallments.getAffectedInterest(), unitOfWork);
 
         if (newInstallments.getAffectedTax().compareTo(BigDecimal.ZERO) > 0)
-            createLoanLedgerEntryUseCase.taxRepayment(loanId, newInstallments.getAffectedTax(), persistenceTransactionManager);
+            createLoanLedgerEntryUseCase.taxRepayment(loanId, transaction, newInstallments.getAffectedTax(), unitOfWork);
 
         return newInstallments.getInstallments();
     }

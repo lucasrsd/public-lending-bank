@@ -18,14 +18,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{host}}/api/account/1678226537787",
+					"raw": "{{host}}/api/account/1",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
 						"api",
 						"account",
-						"1678226537787"
+						"1"
 					]
 				}
 			},
@@ -43,14 +43,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{host}}/api/loan/1678226559198",
+					"raw": "{{host}}/api/loan/100234233",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
 						"api",
 						"loan",
-						"1678226559198"
+						"100234233"
 					]
 				}
 			},
@@ -68,14 +68,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{host}}/api/loan-transactions/1678226559198",
+					"raw": "{{host}}/api/loan-transactions/100234245",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
 						"api",
 						"loan-transactions",
-						"1678226559198"
+						"100234245"
 					]
 				}
 			},
@@ -132,6 +132,31 @@
 			"response": []
 		},
 		{
+			"name": "Ledger - Get entries by loan",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "{{apikey}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/ledger/100234245",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"ledger",
+						"100234245"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Create account",
 			"request": {
 				"method": "POST",
@@ -177,7 +202,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"accountId\": 1678226537787,\n    \"amount\":  50000,\n    \"term\": 4,\n    \"interestRate\": 4,\n    \"amortizationType\": \"PRICE\",\n    \"interestFrequency\": \"MONTH\",\n    \"disbursementDate\": \"2023-03-07\",\n    \"tax\": \"IOF\"\n}   ",
+					"raw": "{\n    \"accountId\": 100234244,\n    \"amount\":  34343,\n    \"term\": 4,\n    \"interestRate\": 2, \n    \"interestFrequency\": \"DAY\",\n    \"amortizationType\": \"PRICE\",\n    \"disbursementDate\": \"2023-02-11\",\n    \"tax\": \"IOF\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -210,7 +235,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"accountId\": 1678226537787,\n    \"amount\":  10000,\n    \"term\": 24,\n    \"interestRate\": 11,\n    \"amortizationType\": \"SAC\",\n    \"interestFrequency\": \"YEAR\",\n    \"disbursementDate\": \"2022-03-15\",\n    \"tax\": \"IOF\"\n}",
+					"raw": "{\n    \"accountId\": 100234232,\n    \"amount\":  4444444,\n    \"term\": 12,\n    \"interestRate\": 3,\n    \"amortizationType\": \"SAC\",\n    \"interestFrequency\": \"DAY\",\n    \"disbursementDate\": \"2023-02-12\"\n}   ",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -243,7 +268,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"loanId\": 1678226554097\n}",
+					"raw": "{\n    \"loanId\": 100234245\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -277,7 +302,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"loanId\": 1678226566424,\n    \"amount\": 343\n}",
+					"raw": "{\n    \"loanId\": 100234245,\n    \"amount\": 124692.0778675174\n}",
 					"options": {
 						"raw": {
 							"language": "json"

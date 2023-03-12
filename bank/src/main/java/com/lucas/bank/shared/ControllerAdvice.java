@@ -1,7 +1,7 @@
 package com.lucas.bank.shared;
 
 import com.lucas.bank.shared.adapters.DistributedLock;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import com.lucas.bank.shared.util.ErrorDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ public class ControllerAdvice {
     @Autowired
     private DistributedLock distributedLock;
 
-    private final Logger LOG = LoggerFactory.getLogger(PersistenceTransactionManager.class);
+    private final Logger LOG = LoggerFactory.getLogger(UnitOfWork.class);
 
     @ResponseBody
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

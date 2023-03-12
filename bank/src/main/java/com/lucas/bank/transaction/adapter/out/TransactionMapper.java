@@ -22,16 +22,9 @@ public class TransactionMapper {
     }
 
     TransactionPOJO mapToPOJO(Transaction transaction) {
-
-        Long transactionId = transaction.getTransactionId();
-
-        if (transactionId == null){
-            transactionId =  new Date().getTime();
-        }
-
         return TransactionPOJO
                 .builder()
-                .transactionId(transactionId)
+                .transactionId(transaction.getTransactionId())
                 .loanId(transaction.getLoanId())
                 .date(DateTimeUtil.to(transaction.getDate()))
                 .amount(transaction.getAmount())

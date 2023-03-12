@@ -12,11 +12,11 @@ import java.util.Date;
 @Data
 @Builder
 public class Transaction {
-    private final Long transactionId;
-    private final Long loanId;
-    private final Date date;
-    private final TransactionType type;
-    private final BigDecimal amount;
+    private Long transactionId;
+    private Long loanId;
+    private Date date;
+    private TransactionType type;
+    private BigDecimal amount;
 
     public static Transaction withoutId(TransactionType type, Long loanId, BigDecimal amount){
         return Transaction

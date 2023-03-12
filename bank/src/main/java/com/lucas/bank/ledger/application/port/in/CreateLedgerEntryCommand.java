@@ -1,6 +1,7 @@
 package com.lucas.bank.ledger.application.port.in;
 
 import com.lucas.bank.ledger.domain.LedgerAccount;
+import com.lucas.bank.ledger.domain.Side;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -13,45 +14,40 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = false)
 @Builder
 public class CreateLedgerEntryCommand {
+
+    
     @NotNull
     private final Long loanId;
 
     @NotNull
-    private final String transactionType;
-
+    private final Long transactionId;
     @NotNull
-    private final BigDecimal debitAmount;
-
+    private final String name;
+    
     @NotNull
-    private final BigDecimal creditAmount;
-
+    private final Side type;
     @NotNull
-    private final LedgerAccount ledgerDebitAccount;
-
+    private final BigDecimal amount;
+    
     @NotNull
-    private final LedgerAccount ledgerCreditAccount;
-
+    private final LedgerAccount ledgerAccount;
+    
     @NotNull
     private final Date bookingDate;
 
-    @NotNull
-    private final Date transactionDate;
-
     public CreateLedgerEntryCommand(Long loanId,
-                                    String transactionType,
-                                    BigDecimal debitAmount,
-                                    BigDecimal creditAmount,
-                                    LedgerAccount ledgerDebitAccount,
-                                    LedgerAccount ledgerCreditAccount,
-                                    Date bookingDate,
-                                    Date transactionDate) {
+                                    Long transactionId,
+                                    String name,
+                                    Side type,
+                                    BigDecimal amount,
+                                    LedgerAccount ledgerAccount,
+                                    Date bookingDate) {
         this.loanId = loanId;
-        this.transactionType = transactionType;
-        this.debitAmount = debitAmount;
-        this.creditAmount = creditAmount;
-        this.ledgerDebitAccount = ledgerDebitAccount;
-        this.ledgerCreditAccount = ledgerCreditAccount;
+        this.transactionId = transactionId;
+        this.name = name;
+        this.type = type;
+        this.amount = amount;
+        this.ledgerAccount = ledgerAccount;
         this.bookingDate = bookingDate;
-        this.transactionDate = transactionDate;
     }
 }

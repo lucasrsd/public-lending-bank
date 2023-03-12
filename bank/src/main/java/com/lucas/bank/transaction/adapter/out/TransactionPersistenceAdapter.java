@@ -1,7 +1,8 @@
 package com.lucas.bank.transaction.adapter.out;
 
+import com.lucas.bank.shared.adapters.AtomicCounter;
 import com.lucas.bank.shared.adapters.PersistenceAdapter;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import com.lucas.bank.transaction.application.port.out.CreateTransactionPort;
 import com.lucas.bank.transaction.application.port.out.LoadTransactionPort;
 import com.lucas.bank.transaction.domain.Transaction;
@@ -16,11 +17,17 @@ class TransactionPersistenceAdapter implements CreateTransactionPort, LoadTransa
 
     private final TransactionMapper transactionMapper;
     private final TransactionRepository transactionRepository;
+    private final AtomicCounter atomicCounter;
 
     @Override
-    public Long createTransaction(Transaction transaction, PersistenceTransactionManager persistenceTransactionManager) {
+    public Long createTransaction(Transaction transaction, UnitOfWork unitOfWork) {
+
+        if (transaction.getTransactionId() == null){
+            transaction.setTransactionId(atomicCounter.generate());
+        }
+
         var transactionPOJO = transactionMapper.mapToPOJO(transaction);
-        persistenceTransactionManager.addTransaction(transactionPOJO);
+        unitOfWork.addTransaction(transactionPOJO);
         return transactionPOJO.getTransactionId();
     }
 

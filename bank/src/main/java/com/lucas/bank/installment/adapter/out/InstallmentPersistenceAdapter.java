@@ -6,7 +6,7 @@ import com.lucas.bank.shared.adapters.PersistenceAdapter;
 import com.lucas.bank.installment.application.port.out.CreateInstallmentPort;
 import com.lucas.bank.installment.application.port.out.LoadInstallmentPort;
 import com.lucas.bank.installment.domain.Installment;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -21,9 +21,9 @@ class InstallmentPersistenceAdapter implements CreateInstallmentPort, LoadInstal
 
 
     @Override
-    public void createInstallment(AmortizationType amortizationType, Long loanId, List<Installment> installments, PersistenceTransactionManager persistenceTransactionManager) {
+    public void createInstallment(AmortizationType amortizationType, Long loanId, List<Installment> installments, UnitOfWork unitOfWork) {
         var installmentPOJO = installmentMapper.mapToPOJO(amortizationType, loanId, installments);
-        persistenceTransactionManager.addTransaction(installmentPOJO);
+        unitOfWork.addTransaction(installmentPOJO);
     }
 
     @Override
@@ -33,8 +33,8 @@ class InstallmentPersistenceAdapter implements CreateInstallmentPort, LoadInstal
     }
 
     @Override
-    public void updateInstallments(Long loanId, AmortizationType amortizationType, List<Installment> installments, PersistenceTransactionManager persistenceTransactionManager) {
+    public void updateInstallments(Long loanId, AmortizationType amortizationType, List<Installment> installments, UnitOfWork unitOfWork) {
         var installmentPOJO = installmentMapper.mapToPOJO(amortizationType, loanId, installments);
-        persistenceTransactionManager.addTransaction(installmentPOJO);
+        unitOfWork.addTransaction(installmentPOJO);
     }
 }

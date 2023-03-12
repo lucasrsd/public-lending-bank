@@ -3,6 +3,7 @@ package com.lucas.bank.shared.util;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -27,9 +28,10 @@ public class DateTimeUtil {
         return cal.getTime();
     }
 
-    public static LocalDateTime convertToLocalDateTimeViaMilisecond(Date dateToConvert) {
+    public static LocalDateTime convertToMidnight(Date dateToConvert) {
         return Instant.ofEpochMilli(dateToConvert.getTime())
                 .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
+                .toLocalDateTime()
+                .truncatedTo(ChronoUnit.DAYS);
     }
 }

@@ -3,8 +3,9 @@ package com.lucas.bank.account.adapter.out;
 import com.lucas.bank.account.application.port.out.CreateAccountPort;
 import com.lucas.bank.account.application.port.out.LoadAccountPort;
 import com.lucas.bank.account.domain.Account;
+import com.lucas.bank.shared.adapters.AtomicCounter;
 import com.lucas.bank.shared.adapters.PersistenceAdapter;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -13,6 +14,7 @@ class AccountPersistenceAdapter implements LoadAccountPort, CreateAccountPort {
 
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
+    private final AtomicCounter atomicCounter;
 
     @Override
     public Account loadAccount(Long accountId) {
@@ -23,9 +25,15 @@ class AccountPersistenceAdapter implements LoadAccountPort, CreateAccountPort {
     }
 
     @Override
-    public Account createAccount(Account account, PersistenceTransactionManager persistenceTransactionManager) {
+    public Account createAccount(Account account, UnitOfWork unitOfWork) {
+
+        if (account.getAccountId() == null){
+            account.setAccountId(atomicCounter.generate());
+        }
+
         AccountPOJO accountPojo = accountMapper.mapToPOJO(account);
-        persistenceTransactionManager.addTransaction(accountPojo);
+
+        unitOfWork.addTransaction(accountPojo);
         return accountMapper.mapToDomainEntity(accountPojo);
     }
 }

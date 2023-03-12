@@ -12,5 +12,6 @@ import java.util.Map;
 @Builder
 @EqualsAndHashCode(callSuper = false)
 public class LedgerAggregate {
-    private final Ledger ledger;
+    private final Ledger debit;
+    private final Ledger credit;
 }

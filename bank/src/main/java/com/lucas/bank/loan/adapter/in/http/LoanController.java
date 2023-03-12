@@ -1,16 +1,19 @@
 package com.lucas.bank.loan.adapter.in.http;
 
+import com.lucas.bank.interest.application.port.in.AccrualUseCase;
 import com.lucas.bank.loan.adapter.in.contracts.ListLoanResponse;
 import com.lucas.bank.loan.adapter.in.contracts.LoanOverviewResponse;
+import com.lucas.bank.loan.application.port.in.LoanTransactionUseCase;
 import com.lucas.bank.shared.adapters.WebAdapter;
 import com.lucas.bank.loan.adapter.in.contracts.CreateLoanRequest;
 import com.lucas.bank.loan.application.port.in.CreateLoanUseCase;
 import com.lucas.bank.loan.application.port.in.LoadLoanQuery;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Date;
 
 
 @WebAdapter
@@ -21,10 +24,9 @@ public class LoanController {
 
     private final CreateLoanUseCase createLoanUseCase;
     private final LoadLoanQuery loadLoanQuery;
-
     @PostMapping
     LoanOverviewResponse create(@Valid @RequestBody CreateLoanRequest request) {
-        var transaction = PersistenceTransactionManager.newPersistenceTransaction();
+        var transaction = UnitOfWork.newInstance();
         var loanId = createLoanUseCase.createLoan(request.mapToCommand(), transaction);
         transaction.commit();
         return LoanOverviewResponse.mapToResponse(loadLoanQuery.loadLoan(loanId));

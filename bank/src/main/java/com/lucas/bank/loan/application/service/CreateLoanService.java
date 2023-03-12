@@ -14,7 +14,7 @@ import com.lucas.bank.loan.application.port.in.CreateLoanCommand;
 import com.lucas.bank.loan.application.port.in.CreateLoanUseCase;
 import com.lucas.bank.loan.application.port.out.CreateLoanPort;
 import com.lucas.bank.loan.domain.Loan;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import com.lucas.bank.shared.util.DateTimeUtil;
 import com.lucas.bank.tax.application.port.in.CalculateTaxesCommand;
 import com.lucas.bank.tax.application.port.in.CalculateTaxesUseCase;
@@ -45,7 +45,7 @@ public class CreateLoanService implements CreateLoanUseCase {
     }
 
     @Override
-    public Long createLoan(CreateLoanCommand command, PersistenceTransactionManager persistenceTransactionManager) {
+    public Long createLoan(CreateLoanCommand command, UnitOfWork unitOfWork) {
 
         Date disbursementDate = command.getDisbursementDate() == null
                 ? new Date()
@@ -71,8 +71,12 @@ public class CreateLoanService implements CreateLoanUseCase {
             taxes = calculateTaxesIfPresent(totalAmount, command.getTerm(), AmortizationType.valueOf(command.getAmortizationType()).name(), disbursementDate, command.getTax(), calculationInterestRate);
         }
 
-        var daysFromDisbursement = ChronoUnit.DAYS.between(DateTimeUtil.convertToLocalDateTimeViaMilisecond(disbursementDate),
-                DateTimeUtil.convertToLocalDateTimeViaMilisecond(new Date()));
+        var daysFromDisbursement = ChronoUnit.DAYS.between(DateTimeUtil.convertToMidnight(disbursementDate),
+                DateTimeUtil.convertToMidnight(new Date()));
+
+        if (daysFromDisbursement < 0){
+            throw new RuntimeException("Disbursement date cannot be in the future.");
+        }
 
         Date lastAccrualDate = null;
         BigDecimal accruedInterest = null;
@@ -96,7 +100,7 @@ public class CreateLoanService implements CreateLoanUseCase {
                 .disbursementDate(disbursementDate)
                 .build();
 
-        var createdLoan = createLoanPort.createLoan(loan, persistenceTransactionManager);
+        var createdLoan = createLoanPort.createLoan(loan, unitOfWork);
 
         var createInstallmentCommand = CreateInstallmentCommand
                 .builder()
@@ -109,7 +113,7 @@ public class CreateLoanService implements CreateLoanUseCase {
                 .disbursementDate(disbursementDate)
                 .build();
 
-        createInstallmentUseCase.create(createInstallmentCommand, persistenceTransactionManager);
+        createInstallmentUseCase.create(createInstallmentCommand, unitOfWork);
 
         return createdLoan;
     }

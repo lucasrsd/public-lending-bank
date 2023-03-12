@@ -2,7 +2,7 @@ package com.lucas.bank.transaction.adapter.in.http;
 
 import com.lucas.bank.shared.adapters.DistributedLock;
 import com.lucas.bank.shared.adapters.WebAdapter;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import com.lucas.bank.transaction.adapter.in.contracts.DisburseLoanRequest;
 import com.lucas.bank.transaction.adapter.in.contracts.RepayLoanRequest;
 import com.lucas.bank.transaction.application.port.in.DisburseLoanUseCase;
@@ -38,7 +38,7 @@ public class LoanTransactionsController {
         // ToDo - check multiple partitions with same keys
 
         distributedLock.tryAcquire(request.getLoanId().toString());
-        var transaction = PersistenceTransactionManager.newPersistenceTransaction();
+        var transaction = UnitOfWork.newInstance();
         disburseLoanUseCase.disburse(request.getLoanId(), transaction);
         transaction.commit();
         distributedLock.release();
@@ -47,7 +47,7 @@ public class LoanTransactionsController {
     @PostMapping(path = "repayment")
     void repayment(@Valid @RequestBody RepayLoanRequest request) {
         distributedLock.tryAcquire(request.getLoanId().toString());
-        var transaction = PersistenceTransactionManager.newPersistenceTransaction();
+        var transaction = UnitOfWork.newInstance();
         repayLoanUseCase.repayment(request.getLoanId(), request.getAmount(), transaction);
         transaction.commit();
         distributedLock.release();

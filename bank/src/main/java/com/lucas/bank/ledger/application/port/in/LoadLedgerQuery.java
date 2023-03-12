@@ -1,9 +1,7 @@
 package com.lucas.bank.ledger.application.port.in;
 
-import com.lucas.bank.ledger.application.port.out.SummaryAggregate;
+import com.lucas.bank.ledger.application.port.out.LedgerEntriesAggregate;
 
 public interface LoadLedgerQuery {
-
-    SummaryAggregate summary();
-
+    LedgerEntriesAggregate loadLedgers(Long loanId);
 }

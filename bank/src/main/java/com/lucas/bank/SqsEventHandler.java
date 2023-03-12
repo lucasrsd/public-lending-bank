@@ -1,22 +1,24 @@
 package com.lucas.bank;
 
+import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.google.gson.Gson;
-import com.lucas.bank.interest.application.port.in.AccrualUseCase;
 import com.lucas.bank.loan.application.port.in.LoadLoanQuery;
 import com.lucas.bank.loan.application.port.in.LoanTransactionUseCase;
 import com.lucas.bank.shared.staticInformation.StaticInformation;
 import com.lucas.bank.shared.staticInformation.StaticMessagingRouter;
 import com.lucas.bank.shared.adapters.DistributedLock;
 import com.lucas.bank.shared.sqs.SqsWrapper;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -32,39 +34,55 @@ public class SqsEventHandler {
     private final LoadLoanQuery loadLoanQuery;
     private final LoanTransactionUseCase loanTransactionUseCase;
 
-
     @RequestMapping(path = "/event-sqs", method = RequestMethod.POST)
-    public void eventSqs(@RequestParam("type") String type, @RequestBody StreamLambdaHandler.AnnotatedSQSEvent message) {
+    public SQSBatchResponse eventSqs(@RequestParam("type") String type, @RequestBody StreamLambdaHandler.AnnotatedSQSEvent message) {
 
         log.info("Received SQS event >> type: {}, body {}", type, new Gson().toJson(message));
 
+        List<SQSBatchResponse.BatchItemFailure> batchItemFailures = new ArrayList<SQSBatchResponse.BatchItemFailure>();
+        String messageId = "";
+        String route = "";
+
         for (SQSEvent.SQSMessage event : message.getRecords()) {
+            try {
 
-            log.info("Attributes: {}", new Gson().toJson(event.getMessageAttributes()));
+                log.info("Attributes: {}", new Gson().toJson(event.getMessageAttributes()));
 
-            if (!event.getMessageAttributes().containsKey(StaticMessagingRouter.ROUTER_KEY_NAME)) {
-                log.info("Ignoring message without router attribute");
-                continue;
+                messageId = event.getMessageId();
+
+                log.info("Processing message id : " + messageId);
+
+                if (!event.getMessageAttributes().containsKey(StaticMessagingRouter.ROUTER_KEY_NAME)) {
+                    log.info("Ignoring message without router attribute");
+                    continue;
+                }
+
+                route = event.getMessageAttributes().get(StaticMessagingRouter.ROUTER_KEY_NAME).getStringValue();
+
+                if (route.equals(StaticMessagingRouter.ROUTE_DAILY_BATCH)) {
+                    processDailyBatch();
+                }
+
+                if (route.equals(StaticMessagingRouter.ROUTE_LOAN_EXTRACTION)) {
+                    DailyBatchDto batchDto = new Gson().fromJson(event.getBody(), DailyBatchDto.class);
+                    processExtraction(batchDto.batchBlock);
+                }
+
+                if (route.equals(StaticMessagingRouter.ROUTE_LOAN_ACCRUAL)) {
+                    AccrualDto accrualDto = new Gson().fromJson(event.getBody(), AccrualDto.class);
+                    processAccrual(accrualDto.loanId);
+                }
+
+                log.info("Finish");
+
+            } catch (Exception e) {
+                log.error("Adding failure message to response, id: " + messageId);
+                log.error("Exception executing route: " + route, e);
+                batchItemFailures.add(new SQSBatchResponse.BatchItemFailure(messageId));
             }
-
-            var route = event.getMessageAttributes().get(StaticMessagingRouter.ROUTER_KEY_NAME).getStringValue();
-
-            if (route.equals(StaticMessagingRouter.ROUTE_DAILY_BATCH)) {
-                processDailyBatch();
-            }
-
-            if (route.equals(StaticMessagingRouter.ROUTE_LOAN_EXTRACTION)) {
-                DailyBatchDto batchDto = new Gson().fromJson(event.getBody(), DailyBatchDto.class);
-                processExtraction(batchDto.batchBlock);
-            }
-
-            if (route.equals(StaticMessagingRouter.ROUTE_LOAN_ACCRUAL)) {
-                AccrualDto accrualDto = new Gson().fromJson(event.getBody(), AccrualDto.class);
-                processAccrual(accrualDto.loanId);
-            }
-
-            log.info("Finish");
         }
+
+        return new SQSBatchResponse(batchItemFailures);
     }
 
     private void processDailyBatch() {
@@ -94,7 +112,7 @@ public class SqsEventHandler {
         var accrualDate = new Date();
 
         distributedLock.tryAcquire(loanId.toString());
-        var transaction = PersistenceTransactionManager.newPersistenceTransaction();
+        var transaction = UnitOfWork.newInstance();
 
         loanTransactionUseCase.dailyAccrual(loanId, accrualDate, transaction);
 
@@ -105,6 +123,8 @@ public class SqsEventHandler {
     }
 
     class AccrualDto {
+        public Long loanId;
+
         public AccrualDto(Long loanId) {
             this.loanId = loanId;
         }
@@ -116,8 +136,6 @@ public class SqsEventHandler {
         public void setLoanId(Long loanId) {
             this.loanId = loanId;
         }
-
-        public Long loanId;
     }
 
     class DailyBatchDto {

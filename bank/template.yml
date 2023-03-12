@@ -32,8 +32,6 @@ Resources:
 
   ApiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Name: 'bank-api-gateway-function'
-    Description: 'API Gateway handler'
     Properties:
       CodeUri: .
       Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
@@ -43,6 +41,8 @@ Resources:
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
             TableName: !Ref BankDynamoDbTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankConfigurationTable
         - DynamoDBCrudPolicy:
             TableName: !Ref BankLockDynamoDbTable
       Events:
@@ -54,10 +54,8 @@ Resources:
             RestApiId:
               Ref: ApiGatewayApi
 
-  BatchFunction:
+  LoanDailySchedule:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Name: 'bank-batch-function'
-    Description: 'Batch handler'
     Properties:
       CodeUri: .
       Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
@@ -67,6 +65,40 @@ Resources:
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
             TableName: !Ref BankDynamoDbTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankConfigurationTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankLockDynamoDbTable
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanDailyBatchJob.QueueName
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanAccrualExtraction.QueueName
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt LoanAccrualQueue.QueueName
+      Events:
+        DailyBatchJob:
+          Type: Schedule
+          Properties:
+            Schedule: 'cron(1 0 * * ? *)'
+            Name: DailySchedule
+            Enabled: true
+
+  BatchFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: .
+      Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Policies:
+        # Read more about SAM policy templates here
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - AWSLambdaExecute
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankDynamoDbTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankConfigurationTable
         - DynamoDBCrudPolicy:
             TableName: !Ref BankLockDynamoDbTable
         - SQSSendMessagePolicy:
@@ -86,8 +118,6 @@ Resources:
 
   ExtractionFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Name: 'bank-batch-extraction-function'
-    Description: 'Publish messages for each batch block'
     Properties:
       CodeUri: .
       Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
@@ -97,6 +127,8 @@ Resources:
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
             TableName: !Ref BankDynamoDbTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankConfigurationTable
         - DynamoDBCrudPolicy:
             TableName: !Ref BankLockDynamoDbTable
         - SQSSendMessagePolicy:
@@ -116,8 +148,6 @@ Resources:
 
   LoanAccrualFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Name: 'bank-loan-accrual-function'
-    Description: 'Loan interest accrual'
     Properties:
       CodeUri: .
       Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
@@ -127,6 +157,8 @@ Resources:
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
             TableName: !Ref BankDynamoDbTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BankConfigurationTable
         - DynamoDBCrudPolicy:
             TableName: !Ref BankLockDynamoDbTable
         - SQSSendMessagePolicy:
@@ -171,8 +203,6 @@ Resources:
           AttributeType: S
         - AttributeName: loanState
           AttributeType: S
-        - AttributeName: ledgerEntryId
-          AttributeType: S
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
@@ -190,16 +220,6 @@ Resources:
               - batchBlock
               - loanId
             ProjectionType: INCLUDE
-        - IndexName: ledger-entries-gsi
-          KeySchema:
-            - AttributeName: ledgerEntryId
-              KeyType: HASH
-          Projection:
-            NonKeyAttributes:
-              - loanId
-              - transactionDate
-              - transactionType
-            ProjectionType: INCLUDE
 
   BankLockDynamoDbTable:
     Type: AWS::DynamoDB::Table
@@ -212,4 +232,21 @@ Resources:
       KeySchema:
         - AttributeName: key
           KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  BankConfigurationTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    Properties:
+      TableName: bank-configuration
+      AttributeDefinitions:
+        - AttributeName: key
+          AttributeType: S
+        - AttributeName: type
+          AttributeType: S
+      KeySchema:
+        - AttributeName: key
+          KeyType: HASH
+        - AttributeName: type
+          KeyType: RANGE
       BillingMode: PAY_PER_REQUEST

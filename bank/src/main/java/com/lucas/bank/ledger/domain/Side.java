@@ -1,6 +1,6 @@
 package com.lucas.bank.ledger.domain;
 
-public enum OperationType {
+public enum Side {
     DEBIT,
     CREDIT
 }

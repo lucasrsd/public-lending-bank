@@ -13,9 +13,9 @@ import java.util.List;
 @Data
 @Builder
 public class Loan {
-    private final Long loanId;
-    private final Long accountId;
-    private final AmortizationType type;
+    private Long loanId;
+    private Long accountId;
+    private AmortizationType type;
     private BigDecimal amount;
     private LoanState state;
     private Integer term;

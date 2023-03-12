@@ -48,6 +48,18 @@ public class DynamoDbQueryWrapper<T> {
         return mapper.scan(this.parserType, scanExpression);
     }
 
+    public List<T> listByPkBeginsWith(String pkPrefix) {
+
+        Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+        eav.put(":prefix", new AttributeValue().withS(pkPrefix));
+
+        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
+                .withFilterExpression("begins_with(pk, :prefix)")
+                .withExpressionAttributeValues(eav);
+
+        return mapper.scan(this.parserType, scanExpression);
+    }
+
     public List<T> indexFullScan(String indexName) {
         DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
                 .withIndexName(indexName);

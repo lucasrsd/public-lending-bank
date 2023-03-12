@@ -7,7 +7,7 @@ import com.lucas.bank.installment.application.port.in.CreateInstallmentCommand;
 import com.lucas.bank.installment.application.port.in.CreateInstallmentUseCase;
 import com.lucas.bank.installment.application.port.out.CreateInstallmentPort;
 import com.lucas.bank.installment.domain.InstallmentFactory;
-import com.lucas.bank.shared.transactionManager.PersistenceTransactionManager;
+import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -19,12 +19,12 @@ public class CreateInstallmentService implements CreateInstallmentUseCase {
     private final CreateInstallmentPort createInstallmentPort;
 
     @Override
-    public void create(CreateInstallmentCommand command, PersistenceTransactionManager persistenceTransactionManager) {
+    public void create(CreateInstallmentCommand command, UnitOfWork unitOfWork) {
         if (command.getLoanId() == null)
             throw new RuntimeException("Loan Id null");
 
         var installments = preview(command);
-        createInstallmentPort.createInstallment(AmortizationType.valueOf(command.getAmortizationType()), command.getLoanId(), installments, persistenceTransactionManager);
+        createInstallmentPort.createInstallment(AmortizationType.valueOf(command.getAmortizationType()), command.getLoanId(), installments, unitOfWork);
     }
 
     @Override

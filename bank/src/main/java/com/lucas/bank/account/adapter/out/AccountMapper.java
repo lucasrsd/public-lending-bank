@@ -21,15 +21,9 @@ class AccountMapper {
     }
 
     AccountPOJO mapToPOJO(Account account) {
-        Long accountId = account.getAccountId();
-
-        if (accountId == null){
-            accountId =  new Date().getTime();
-        }
-
         return AccountPOJO
                 .builder()
-                .accountId(accountId)
+                .accountId(account.getAccountId())
                 .holderName(account.getHolderName())
                 .holderBirthDate(DateTimeUtil.to(account.getHolderBirthDate()))
                 .createdAt(DateTimeUtil.to(account.getCreatedAt()))
