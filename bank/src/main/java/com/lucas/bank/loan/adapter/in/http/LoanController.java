@@ -1,9 +1,8 @@
 package com.lucas.bank.loan.adapter.in.http;
 
-import com.lucas.bank.interest.application.port.in.AccrualUseCase;
 import com.lucas.bank.loan.adapter.in.contracts.ListLoanResponse;
 import com.lucas.bank.loan.adapter.in.contracts.LoanOverviewResponse;
-import com.lucas.bank.loan.application.port.in.LoanTransactionUseCase;
+import com.lucas.bank.shared.adapters.DistributedLock;
 import com.lucas.bank.shared.adapters.WebAdapter;
 import com.lucas.bank.loan.adapter.in.contracts.CreateLoanRequest;
 import com.lucas.bank.loan.application.port.in.CreateLoanUseCase;
@@ -13,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Date;
 
 
 @WebAdapter
@@ -24,6 +22,8 @@ public class LoanController {
 
     private final CreateLoanUseCase createLoanUseCase;
     private final LoadLoanQuery loadLoanQuery;
+
+    private final DistributedLock distributedLock;
     @PostMapping
     LoanOverviewResponse create(@Valid @RequestBody CreateLoanRequest request) {
         var transaction = UnitOfWork.newInstance();

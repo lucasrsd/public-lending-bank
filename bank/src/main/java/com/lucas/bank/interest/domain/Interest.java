@@ -16,7 +16,7 @@ import java.util.List;
 import static com.lucas.bank.shared.staticInformation.StaticInformation.MONTH_PERIOD;
 import static com.lucas.bank.shared.staticInformation.StaticInformation.DAY_TO_YEAR_PERIOD;
 import static com.lucas.bank.shared.staticInformation.StaticInformation.YEAR_TO_MONTH_PERIOD;
-import static com.lucas.bank.shared.staticInformation.StaticInformation.PRECISION_SCALE;
+import static com.lucas.bank.shared.staticInformation.StaticInformation.CALCULATION_PRECISION_SCALE;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Data
@@ -31,7 +31,7 @@ public class Interest {
     }
 
     private static BigDecimal withStaticDecimal(Integer value) {
-        var zeros = String.join("", Collections.nCopies(PRECISION_SCALE, "0"));
+        var zeros = String.join("", Collections.nCopies(CALCULATION_PRECISION_SCALE, "0"));
         var bigDecimalString = value.toString() + "." + zeros;
         return new BigDecimal(bigDecimalString);
     }
@@ -41,7 +41,7 @@ public class Interest {
 
         if (interest.ratePercentage.compareTo(BigDecimal.ZERO) == 0) return of(interest.ratePercentage, target);
 
-        var mathContext = new MathContext(PRECISION_SCALE);
+        var mathContext = new MathContext(CALCULATION_PRECISION_SCALE);
 
         if (interest.frequency == InterestFrequency.DAY && target == InterestFrequency.MONTH) {
             var parsedRate = withStaticDecimal(1).add(interest.getRateToCalculate());
@@ -96,11 +96,11 @@ public class Interest {
 
     private static BigDecimal calculateResult(BigDecimal result) {
         var parsedResult = result.subtract(BigDecimal.ONE);
-        return parsedResult.multiply(withStaticDecimal(100)).setScale(PRECISION_SCALE, RoundingMode.HALF_DOWN);
+        return parsedResult.multiply(withStaticDecimal(100)).setScale(CALCULATION_PRECISION_SCALE, RoundingMode.HALF_DOWN);
     }
 
     public BigDecimal getRateToCalculate() {
-        return getRatePercentage().divide(withStaticDecimal(100)).setScale(PRECISION_SCALE, RoundingMode.HALF_DOWN);
+        return getRatePercentage().divide(withStaticDecimal(100)).setScale(CALCULATION_PRECISION_SCALE, RoundingMode.HALF_DOWN);
     }
 
     public List<String> details() {

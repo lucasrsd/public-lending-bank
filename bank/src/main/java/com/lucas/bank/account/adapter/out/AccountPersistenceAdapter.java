@@ -3,6 +3,7 @@ package com.lucas.bank.account.adapter.out;
 import com.lucas.bank.account.application.port.out.CreateAccountPort;
 import com.lucas.bank.account.application.port.out.LoadAccountPort;
 import com.lucas.bank.account.domain.Account;
+import com.lucas.bank.account.domain.AccountNotFoundException;
 import com.lucas.bank.shared.adapters.AtomicCounter;
 import com.lucas.bank.shared.adapters.PersistenceAdapter;
 import com.lucas.bank.shared.persistenceManager.UnitOfWork;
@@ -19,7 +20,7 @@ class AccountPersistenceAdapter implements LoadAccountPort, CreateAccountPort {
     @Override
     public Account loadAccount(Long accountId) {
         var account = accountRepository.get(AccountPOJO.of(accountId));
-        if (account == null) throw new RuntimeException("Account not found: " + accountId);
+        if (account == null) throw new AccountNotFoundException(accountId);
 
         return accountMapper.mapToDomainEntity(account);
     }

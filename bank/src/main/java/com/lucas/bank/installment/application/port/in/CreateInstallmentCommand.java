@@ -8,7 +8,7 @@ import lombok.Value;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -32,7 +32,7 @@ public class CreateInstallmentCommand extends SelfValidating<CreateInstallmentCo
     private final TaxAggregate taxes;
 
     @NotNull
-    private final Date disbursementDate;
+    private final LocalDateTime disbursementDate;
 
     public CreateInstallmentCommand(
             Long loanId,
@@ -41,7 +41,7 @@ public class CreateInstallmentCommand extends SelfValidating<CreateInstallmentCo
             Integer term,
             String amortizationType,
             TaxAggregate taxes,
-            Date disbursementDate) {
+            LocalDateTime disbursementDate) {
         this.loanId = loanId;
         this.amount = amount;
         this.rate = rate;

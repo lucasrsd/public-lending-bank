@@ -1,12 +1,13 @@
 package com.lucas.bank.transaction.domain;
 
+import com.lucas.bank.shared.util.DateTimeUtil;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Data
@@ -14,7 +15,7 @@ import java.util.Date;
 public class Transaction {
     private Long transactionId;
     private Long loanId;
-    private Date date;
+    private LocalDateTime date;
     private TransactionType type;
     private BigDecimal amount;
 
@@ -22,7 +23,7 @@ public class Transaction {
         return Transaction
                 .builder()
                 .loanId(loanId)
-                .date(new Date())
+                .date(DateTimeUtil.nowWithTimeZone())
                 .type(type)
                 .amount(amount)
                 .build();

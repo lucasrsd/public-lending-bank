@@ -30,6 +30,14 @@ class LoadLedgerPersistenceAdapter implements CreateLedgerPort, LoadLedgerPort {
 
     @Override
     public List<Ledger> loadLedgers(Long loanId) {
+        var ledgerPOJOS =  ledgerRepository.listByPkBeginsWithAndSkBeginsWith(LedgerPOJO.pkPrefix, LedgerPOJO.skPrefix + loanId + "#");
+        List<Ledger> ledgerEntries = new ArrayList<>();
+        ledgerPOJOS.forEach(i -> ledgerEntries.add(ledgerMapper.mapToDomainEntity(i)));
+        return ledgerEntries;
+    }
+
+    @Override
+    public List<Ledger> summarizeLedgers() {
         var ledgerPOJOS =  ledgerRepository.listByPkBeginsWith(LedgerPOJO.pkPrefix);
         List<Ledger> ledgerEntries = new ArrayList<>();
         ledgerPOJOS.forEach(i -> ledgerEntries.add(ledgerMapper.mapToDomainEntity(i)));

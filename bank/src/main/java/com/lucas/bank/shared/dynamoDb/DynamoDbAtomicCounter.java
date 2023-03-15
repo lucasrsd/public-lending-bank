@@ -15,13 +15,15 @@ import java.util.Map;
 public class DynamoDbAtomicCounter implements AtomicCounter {
 
     private final Logger LOG = LoggerFactory.getLogger(DynamoDbAtomicCounter.class);
-    private  DynamoDbClient client;
+    private DynamoDbClient client;
 
     public DynamoDbAtomicCounter() {
-        this.client =  DynamoDbClient.builder().region(Region.of(StaticInformation.AWS_REGION_STRING)).build();
+        this.client =  DynamoDbClient.builder().region(Region.of(StaticInformation.getAwsRegion())).build();
     }
 
     public Long generate() {
+
+        // ToDo - Decide on properly distributed ID generation
 
         var attributeUpdateValue = AttributeValueUpdate
                 .builder()
@@ -39,6 +41,6 @@ public class DynamoDbAtomicCounter implements AtomicCounter {
 
         var updateResult = this.client.updateItem(updateItemRequest);
 
-        return Long.parseLong(updateResult.attributes().get("counter").n());
+        return StaticInformation.getRegionIdPrefix() +  Long.parseLong(updateResult.attributes().get("counter").n());
     }
 }

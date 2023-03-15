@@ -9,4 +9,5 @@ import java.util.Map;
 
 public interface LoadLedgerPort {
     List<Ledger> loadLedgers(Long loanId);
+    List<Ledger> summarizeLedgers();
 }

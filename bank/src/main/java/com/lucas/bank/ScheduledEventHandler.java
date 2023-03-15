@@ -1,5 +1,6 @@
 package com.lucas.bank;
 
+import com.lucas.bank.shared.staticInformation.StaticInformation;
 import com.lucas.bank.shared.staticInformation.StaticMessagingRouter;
 import com.lucas.bank.shared.sqs.SqsWrapper;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,11 @@ public class ScheduledEventHandler {
     public void eventScheduled(@RequestParam("type") String type, @RequestBody StreamLambdaHandler.AnnotatedScheduledEvent message) {
 
         log.info("Received Scheduled event, type: {}", type);
+
+        if (!StaticInformation.getAwsRegion().equals(StaticInformation.getBatchMainRegion())){
+            log.info("Skipping batches, lambda instance isn't running at batch main region - Current region: {} - Batch main region: {}", StaticInformation.getAwsRegion(), StaticInformation.getBatchMainRegion());
+            return;
+        }
 
         if (message.getResources().stream().anyMatch(r -> r.endsWith(RESOURCE_DAILY_BATCH))) {
             sqsWrapper.sendMessage(StaticMessagingRouter.QUEUE_URL_DAILY_BATCH(), StaticMessagingRouter.ROUTE_DAILY_BATCH, null);

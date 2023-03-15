@@ -1,6 +1,7 @@
 package com.lucas.bank.loan.adapter.out;
 
 import com.lucas.bank.loan.application.port.out.UpdateLoanPort;
+import com.lucas.bank.loan.domain.LoanNotFoundException;
 import com.lucas.bank.shared.adapters.AtomicCounter;
 import com.lucas.bank.shared.staticInformation.StaticInformation;
 import com.lucas.bank.shared.adapters.PersistenceAdapter;
@@ -10,7 +11,10 @@ import com.lucas.bank.loan.domain.Loan;
 import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import lombok.RequiredArgsConstructor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @RequiredArgsConstructor
@@ -47,7 +51,7 @@ class LoanPersistenceAdapter implements CreateLoanPort, LoadLoanPort, UpdateLoan
     @Override
     public Loan loadLoan(Long loanId) {
         var loanPOJO = loanRepository.get(LoanPOJO.of(loanId));
-        if (loanPOJO == null) throw new RuntimeException("Loan not found: " + loanId);
+        if (loanPOJO == null) throw new LoanNotFoundException(loanId);
         return loanMapper.mapToDomainEntity(loanPOJO);
     }
 

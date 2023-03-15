@@ -1,16 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
+
 Globals:
   Function:
     Timeout: 30
     MemorySize: 1024
-    Runtime: java11
-    AutoPublishAlias: production
-    SnapStart:
-      ApplyOn: PublishedVersions
-    Architectures:
-      - x86_64
     Environment:
       Variables:
         POWERTOOLS_SERVICE_NAME: BankApi
@@ -18,11 +13,19 @@ Globals:
         QUEUE_ARN_LOAN_ACCRUAL_EXTRACTION: !Ref LoanAccrualExtraction
         QUEUE_ARN_LOAN_ACCRUAL: !Ref LoanAccrualQueue
         QUEUE_ARN_LOAN_DAILY_BATCH_JOB: !Ref LoanDailyBatchJob
+        BATCH_MAIN_REGION: eu-west-1
+
+Conditions:
+  createGlobalTable: !Equals [ !Ref 'AWS::Region', 'eu-west-1']
+  createLoadBalancerSimulation: !Equals [ !Ref 'AWS::Region', 'eu-west-1']
+
+# API GATEWAY
 
 Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
     Properties:
+      Name: api-gateway-backend
       StageName: dev
       Auth:
         ApiKeyRequired: true  # for all methods
@@ -30,21 +33,43 @@ Resources:
           CreateUsagePlan: PER_API
           Description: Usage plan for this API
 
+  LoadBalancerGatewayApi:
+    Type: AWS::Serverless::Api
+    Condition: createLoadBalancerSimulation
+    Properties:
+      Name: api-load-balancer
+      StageName: dev
+      Auth:
+        ApiKeyRequired: true  # for all methods
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          Description: Usage plan for this API
+
+# LAMBDAS
+
   ApiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: bank-api
+      Description: Entry point from API Gateway
       CodeUri: .
       Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Runtime: java11
+      AutoPublishAlias: production
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Architectures:
+        - x86_64
       Policies:
         # Read more about SAM policy templates here
         # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankDynamoDbTable
+            TableName: bank-data
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankConfigurationTable
+            TableName: bank-lock
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankLockDynamoDbTable
+            TableName: bank-configuration
       Events:
         ApiGateway:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -54,21 +79,111 @@ Resources:
             RestApiId:
               Ref: ApiGatewayApi
 
+  LoadBalancerSimulation:
+    Type: AWS::Serverless::Function
+    Condition: createLoadBalancerSimulation
+    Properties:
+      FunctionName: load-balancer
+      Description: Manual load balancer simulation to distribute requests through multiple active regions
+      MemorySize: 256
+      InlineCode: |
+            import json
+            import urllib3
+            import random
+            import os
+            import boto3
+            from botocore.exceptions import ClientError
+            
+            http = urllib3.PoolManager()
+            
+            def get_secret():
+              secret_name = "dev/bank/nodes"
+              region_name = "eu-west-1"
+              # Create a Secrets Manager client
+              session = boto3.session.Session()
+              client = session.client(
+              service_name='secretsmanager',
+              region_name=region_name
+              )
+              try:
+                get_secret_value_response = client.get_secret_value(
+                SecretId=secret_name
+                )
+              except ClientError as e:
+                # For a list of exceptions thrown, see
+                # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+                raise e
+              # Decrypts secret using the associated KMS key.
+              return get_secret_value_response['SecretString']
+              # Your code goes here.
+            
+            def lambda_handler(event, context):
+              
+              secret = get_secret()
+              regions = json.loads(secret)
+              
+              target = random.randint(1 ,3)
+              
+              api = regions['REGION_' + str(target) + '_URL']
+              key = regions['REGION_' + str(target) + '_KEY']
+              
+              if api is None or key is None:
+                print('ENVIRONMENT VARIABLES NOT FOUND')
+              
+              response = http.request(event['httpMethod'], api + event['path'],
+              headers={
+              'x-api-key': key,
+              'content-type': 'application/json'
+            },
+              body = event['body'])
+              
+              return {
+            'statusCode': response.status,
+            'headers': {
+              'Content-Type': response.headers['Content-Type']
+            },
+            'body': response.data
+            }
+            # Finish code
+      Handler: index.lambda_handler
+      Policies:
+        - AWSLambdaExecute
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:dev/bank/nodes-oGUizC"
+      Runtime: python3.9
+      CodeUri: InlineFunctionExample
+      Events:
+        LoadBalancerApiGateway:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            RestApiId:
+              Ref: LoadBalancerGatewayApi
+
   LoanDailySchedule:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: bank-schedule
+      Description: Scheduled tasks (e.g. fire everyday at midnight to run the batch)
       CodeUri: .
       Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Runtime: java11
+      AutoPublishAlias: production
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Architectures:
+        - x86_64
       Policies:
         # Read more about SAM policy templates here
         # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankDynamoDbTable
+            TableName: bank-data
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankConfigurationTable
+            TableName: bank-lock
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankLockDynamoDbTable
+            TableName: bank-configuration
         - SQSSendMessagePolicy:
             QueueName:
               !GetAtt LoanDailyBatchJob.QueueName
@@ -89,18 +204,26 @@ Resources:
   BatchFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: bank-batch
+      Description: Check the number of active batch-blocks and post one message for each to extract information from dynamo in a distributed way
       CodeUri: .
       Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Runtime: java11
+      AutoPublishAlias: production
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Architectures:
+        - x86_64
       Policies:
         # Read more about SAM policy templates here
         # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankDynamoDbTable
+            TableName: bank-data
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankConfigurationTable
+            TableName: bank-lock
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankLockDynamoDbTable
+            TableName: bank-configuration
         - SQSSendMessagePolicy:
             QueueName:
               !GetAtt LoanDailyBatchJob.QueueName
@@ -119,18 +242,26 @@ Resources:
   ExtractionFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: bank-parallel-extractor
+      Description: Extract data from dynamoDb given certain batch block
       CodeUri: .
       Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Runtime: java11
+      AutoPublishAlias: production
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Architectures:
+        - x86_64
       Policies:
         # Read more about SAM policy templates here
         # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankDynamoDbTable
+            TableName: bank-data
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankConfigurationTable
+            TableName: bank-lock
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankLockDynamoDbTable
+            TableName: bank-configuration
         - SQSSendMessagePolicy:
             QueueName:
               !GetAtt LoanDailyBatchJob.QueueName
@@ -149,18 +280,26 @@ Resources:
   LoanAccrualFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: bank-loan-accrual
+      Description: Calculate interest accrual and apply interest
       CodeUri: .
       Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Runtime: java11
+      AutoPublishAlias: production
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Architectures:
+        - x86_64
       Policies:
         # Read more about SAM policy templates here
         # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankDynamoDbTable
+            TableName: bank-data
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankConfigurationTable
+            TableName: bank-lock
         - DynamoDBCrudPolicy:
-            TableName: !Ref BankLockDynamoDbTable
+            TableName: bank-configuration
         - SQSSendMessagePolicy:
             QueueName:
               !GetAtt LoanDailyBatchJob.QueueName
@@ -175,6 +314,8 @@ Resources:
           Type: SQS
           Properties:
             Queue: !GetAtt LoanAccrualQueue.Arn
+
+# QUEUES
 
   LoanDailyBatchJob:
     Type: AWS::SQS::Queue
@@ -191,11 +332,16 @@ Resources:
     Properties:
       QueueName: 'loan-accrual-queue'
 
-  BankDynamoDbTable:
-    Type: AWS::DynamoDB::Table
+# DYNAMODB
+
+  BankDataDynamoDbTable:
+    Type: AWS::DynamoDB::GlobalTable
+    Condition: createGlobalTable
     DeletionPolicy: Retain
     Properties:
-      TableName: bank
+      TableName: bank-data
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
       AttributeDefinitions:
         - AttributeName: pk
           AttributeType: S
@@ -220,6 +366,10 @@ Resources:
               - batchBlock
               - loanId
             ProjectionType: INCLUDE
+      Replicas:
+        - Region: eu-west-1
+        - Region: eu-central-1
+        - Region: eu-north-1
 
   BankLockDynamoDbTable:
     Type: AWS::DynamoDB::Table

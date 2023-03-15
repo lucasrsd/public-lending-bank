@@ -5,18 +5,17 @@ import com.lucas.bank.account.domain.Account;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+
 
 @Value
 @Builder
 public class CreateAccountResponse {
     private final Long accountId;
     private final String holderName;
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private final Date holderBirthDate;
+    private final LocalDateTime holderBirthDate;
     private final Boolean active;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-    private final Date createdAt;
+    private final LocalDateTime createdAt;
 
     public static CreateAccountResponse mapToResponse(Account account){
         return CreateAccountResponse

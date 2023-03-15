@@ -12,8 +12,8 @@ import java.util.List;
 @Builder
 @EqualsAndHashCode(callSuper = false)
 public class InstallmentRepaymentAggregate {
-    private final List<Installment> installments;
     private final BigDecimal affectedPrincipal;
     private final BigDecimal affectedInterest;
     private final BigDecimal affectedTax;
+    private final List<Installment> installments;
 }

@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Value
@@ -17,11 +17,9 @@ public class InstallmentResponse {
     public String amortizationType;
     public String state;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    public Date dueDate;
+    public LocalDateTime dueDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-    public Date paymentDate;
+    public LocalDateTime paymentDate;
 
     public PayableAmount principal;
     public PayableAmount interest;

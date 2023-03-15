@@ -9,6 +9,7 @@ import com.lucas.bank.loan.application.port.in.LoanTransactionUseCase;
 import com.lucas.bank.loan.application.port.out.LoadLoanPort;
 import com.lucas.bank.loan.application.port.out.UpdateLoanPort;
 import com.lucas.bank.loan.domain.LoanState;
+import com.lucas.bank.loan.domain.LoanTransactionException;
 import com.lucas.bank.shared.staticInformation.StaticInformation;
 import com.lucas.bank.shared.adapters.UseCase;
 import com.lucas.bank.shared.persistenceManager.UnitOfWork;
@@ -19,8 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -40,7 +41,7 @@ public class LoanTransactionServiceTransaction implements LoanTransactionUseCase
         var loan = loadLoanPort.loadLoan(loanId);
 
         if (!loan.canDisburse()) {
-            throw new RuntimeException("Invalid loan account state to execute disbursement");
+            throw new LoanTransactionException("Invalid loan account state to execute disbursement");
         }
 
         loan.setState(LoanState.ACTIVE);
@@ -53,7 +54,7 @@ public class LoanTransactionServiceTransaction implements LoanTransactionUseCase
         var loan = loadLoanPort.loadLoan(loanId);
 
         if (!loan.canRepay()) {
-            throw new RuntimeException("Invalid loan account state to finalize repayment");
+            throw new LoanTransactionException("Invalid loan account state to finalize repayment");
         }
 
         if (newInstallments.stream().allMatch(i -> i.getState().equals(InstallmentState.PAID))) {
@@ -66,24 +67,24 @@ public class LoanTransactionServiceTransaction implements LoanTransactionUseCase
     }
 
     @Override
-    public void dailyAccrual(Long loanId, Date bookingDate, UnitOfWork unitOfWork) {
+    public void dailyAccrual(Long loanId, LocalDateTime bookingDate, UnitOfWork unitOfWork) {
         var loan = loadLoanPort.loadLoan(loanId);
 
         if (!loan.canAccrue()) {
-            throw new RuntimeException("Invalid loan account state to execute accrual");
+            throw new LoanTransactionException("Invalid loan account state to execute accrual");
         }
 
         var daysFromDisbursement = ChronoUnit.DAYS.between(DateTimeUtil.convertToMidnight(loan.getDisbursementDate()), DateTimeUtil.convertToMidnight(bookingDate));
 
         if (daysFromDisbursement <= 0L) {
-            throw new RuntimeException("Invalid accrual, disbursement date <= today");
+            throw new LoanTransactionException("Invalid accrual, disbursement date <= today");
         }
 
         var dailyAccrualAmount = accrualUseCase.calculateDailyAccrual(loan.getAmount(), loan.getInterest(), daysFromDisbursement);
 
         var installments = loadInstallmentsQuery.loadInstallments(loanId);
 
-        if (installments.getInstallments().stream().anyMatch(i -> isSameDate(bookingDate, i.getDueDate()))){
+        if (installments.getInstallments().stream().anyMatch(i -> DateTimeUtil.isSameDate(bookingDate, i.getDueDate()))){
 
             // ToDo - check if interest has already been applied for the date
 
@@ -103,9 +104,5 @@ public class LoanTransactionServiceTransaction implements LoanTransactionUseCase
         loan.setLastAccrualDate(bookingDate);
         loan.setBatchBlock(StaticInformation.generateRandomBatchBlock());
         updateLoanPort.updateLoan(loan, unitOfWork);
-    }
-
-    private Boolean isSameDate(Date date1, Date date2){
-        return ChronoUnit.DAYS.between(DateTimeUtil.convertToMidnight(date1), DateTimeUtil.convertToMidnight(date2)) == 0;
     }
 }

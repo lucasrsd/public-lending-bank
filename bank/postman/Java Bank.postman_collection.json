@@ -18,14 +18,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{host}}/api/account/1",
+					"raw": "{{host}}/api/account/100234337",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
 						"api",
 						"account",
-						"1"
+						"100234337"
 					]
 				}
 			},
@@ -43,14 +43,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{host}}/api/loan/100234233",
+					"raw": "{{host}}/api/loan/100234334",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
 						"api",
 						"loan",
-						"100234233"
+						"100234334"
 					]
 				}
 			},
@@ -68,14 +68,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{host}}/api/loan-transactions/100234245",
+					"raw": "{{host}}/api/loan-transactions/100234334",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
 						"api",
 						"loan-transactions",
-						"100234245"
+						"100234334"
 					]
 				}
 			},
@@ -143,14 +143,14 @@
 					}
 				],
 				"url": {
-					"raw": "{{host}}/api/ledger/100234245",
+					"raw": "{{host}}/api/ledger/100234334",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
 						"api",
 						"ledger",
-						"100234245"
+						"100234334"
 					]
 				}
 			},
@@ -202,7 +202,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"accountId\": 100234244,\n    \"amount\":  34343,\n    \"term\": 4,\n    \"interestRate\": 2, \n    \"interestFrequency\": \"DAY\",\n    \"amortizationType\": \"PRICE\",\n    \"disbursementDate\": \"2023-02-11\",\n    \"tax\": \"IOF\"\n}",
+					"raw": "{\n    \"accountId\": 100234248,\n    \"amount\":  22334,\n    \"term\": 4,\n    \"interestRate\": 2, \n    \"interestFrequency\": \"DAY\",\n    \"amortizationType\": \"PRICE\",\n    \"disbursementDate\": \"2023-03-11\",\n    \"tax\": \"IOF\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -235,7 +235,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"accountId\": 100234232,\n    \"amount\":  4444444,\n    \"term\": 12,\n    \"interestRate\": 3,\n    \"amortizationType\": \"SAC\",\n    \"interestFrequency\": \"DAY\",\n    \"disbursementDate\": \"2023-02-12\"\n}   ",
+					"raw": "{\n    \"accountId\": 100234248,\n    \"amount\":  50000,\n    \"term\": 12,\n    \"interestRate\": 3,\n    \"amortizationType\": \"SAC\",\n    \"interestFrequency\": \"DAY\",\n    \"disbursementDate\": \"2023-02-12\",\n    \"tax\": \"IOF\"\n}   ",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -268,7 +268,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"loanId\": 100234245\n}",
+					"raw": "{\n    \"loanId\": 100234348\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -302,7 +302,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"loanId\": 100234245,\n    \"amount\": 124692.0778675174\n}",
+					"raw": "{\n    \"loanId\": 100234348,\n    \"amount\": 517978\n}",
 					"options": {
 						"raw": {
 							"language": "json"

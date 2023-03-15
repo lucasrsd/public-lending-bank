@@ -1,5 +1,7 @@
 package com.lucas.bank.transaction.adapter.in.http;
 
+import com.lucas.bank.installment.application.port.out.InstallmentRepaymentAggregate;
+import com.lucas.bank.installment.domain.Installment;
 import com.lucas.bank.shared.adapters.DistributedLock;
 import com.lucas.bank.shared.adapters.WebAdapter;
 import com.lucas.bank.shared.persistenceManager.UnitOfWork;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 
 @WebAdapter
@@ -45,11 +48,15 @@ public class LoanTransactionsController {
     }
 
     @PostMapping(path = "repayment")
-    void repayment(@Valid @RequestBody RepayLoanRequest request) {
+    InstallmentRepaymentAggregate repayment(@Valid @RequestBody RepayLoanRequest request) {
         distributedLock.tryAcquire(request.getLoanId().toString());
         var transaction = UnitOfWork.newInstance();
-        repayLoanUseCase.repayment(request.getLoanId(), request.getAmount(), transaction);
+
+        var result = repayLoanUseCase.repayment(request.getLoanId(), request.getAmount(), transaction);
+
         transaction.commit();
         distributedLock.release();
+
+        return result;
     }
 }

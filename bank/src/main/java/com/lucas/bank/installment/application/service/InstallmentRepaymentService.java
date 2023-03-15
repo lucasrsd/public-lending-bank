@@ -3,14 +3,16 @@ package com.lucas.bank.installment.application.service;
 import com.lucas.bank.installment.application.port.in.InstallmentRepaymentUseCase;
 import com.lucas.bank.installment.application.port.out.InstallmentRepaymentAggregate;
 import com.lucas.bank.installment.domain.Installment;
+import com.lucas.bank.installment.domain.InstallmentRepaymentCalculationException;
 import com.lucas.bank.installment.domain.InstallmentState;
 import com.lucas.bank.shared.adapters.UseCase;
+import com.lucas.bank.shared.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -26,12 +28,12 @@ public class InstallmentRepaymentService implements InstallmentRepaymentUseCase 
         BigDecimal affectedTax = BigDecimal.ZERO;
 
         if (installments.stream().allMatch(i -> i.getState().equals(InstallmentState.PAID)))
-            throw new RuntimeException("All installments are paid, operation cancelled.");
+            throw new InstallmentRepaymentCalculationException("All installments are paid, operation cancelled.");
 
         var installmentsPendingPaymentAmount = sumTotalPendingPaymentAmount(installments);
 
         if (amount.compareTo(installmentsPendingPaymentAmount) > 0)
-            throw new RuntimeException("Repayment amount greater than the total pending: " + installmentsPendingPaymentAmount);
+            throw new InstallmentRepaymentCalculationException("Repayment amount greater than the total pending: " + installmentsPendingPaymentAmount);
 
         Collections.sort(installments, Comparator.comparing(Installment::getNumber));
 
@@ -133,7 +135,7 @@ public class InstallmentRepaymentService implements InstallmentRepaymentUseCase 
 
         if (principalFullyPaid && interestFullyPaid && taxesFullyPaid)
         {
-            installment.setPaymentDate(new Date());
+            installment.setPaymentDate(DateTimeUtil.nowWithTimeZone());
             installment.setState(InstallmentState.PAID);
         }
     }

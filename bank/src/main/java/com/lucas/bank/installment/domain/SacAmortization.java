@@ -7,9 +7,11 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-import static com.lucas.bank.shared.staticInformation.StaticInformation.PRECISION_SCALE;
+import static com.lucas.bank.shared.staticInformation.StaticInformation.CALCULATION_PRECISION_SCALE;
 
 @Getter
 @Setter
@@ -21,8 +23,8 @@ public class SacAmortization extends Installment {
 
     }
 
-    public List<Installment> calculateAmortization(Date disbursementDate, BigDecimal rate, Integer term, BigDecimal amount, TaxAggregate taxes) {
-        var pmt = Pmt.sac(term, amount).setScale(PRECISION_SCALE, RoundingMode.HALF_DOWN);
+    public List<Installment> calculateAmortization(LocalDateTime disbursementDate, BigDecimal rate, Integer term, BigDecimal amount, TaxAggregate taxes) {
+        var pmt = Pmt.sac(term, amount).setScale(CALCULATION_PRECISION_SCALE, RoundingMode.HALF_DOWN);
 
         List<Installment> installments = new ArrayList<>();
 
@@ -31,9 +33,9 @@ public class SacAmortization extends Installment {
 
         for (int installmentNumber = 1; installmentNumber <= term; installmentNumber++) {
 
-            var interest = remainingBalance.multiply(rate).setScale(PRECISION_SCALE, RoundingMode.HALF_DOWN);
+            var interest = remainingBalance.multiply(rate).setScale(CALCULATION_PRECISION_SCALE, RoundingMode.HALF_DOWN);
 
-            remainingBalance = remainingBalance.subtract(principal).setScale(PRECISION_SCALE, RoundingMode.HALF_DOWN);
+            remainingBalance = remainingBalance.subtract(principal).setScale(CALCULATION_PRECISION_SCALE, RoundingMode.HALF_DOWN);
 
             if (installmentNumber == term) {
                 if (remainingBalance.compareTo(BigDecimal.ZERO) != 0) {
@@ -46,9 +48,11 @@ public class SacAmortization extends Installment {
             var dueDate = DateTimeUtil.addMonthsAndRetrieveNextBusinessDay(disbursementDate, installmentNumber);
 
             var tax = addTaxIfPresent(taxes, installmentNumber);
-            var installmentAmount = principal.add(interest).add(tax).setScale(PRECISION_SCALE, RoundingMode.HALF_DOWN);
+            var installmentAmount = principal.add(interest).add(tax).setScale(CALCULATION_PRECISION_SCALE, RoundingMode.HALF_DOWN);
 
             var installment = InstallmentFactory.withInformation(AmortizationType.SAC, installmentNumber, InstallmentState.PENDING, dueDate, null, principal, interest, installmentAmount, tax, remainingBalance, taxCompositionIfPresent(taxes, installmentNumber), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+
+            installment.formatToFinancialTransaction();
 
             installments.add(installment);
         }

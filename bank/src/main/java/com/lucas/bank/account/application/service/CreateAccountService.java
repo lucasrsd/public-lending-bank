@@ -6,9 +6,9 @@ import com.lucas.bank.account.application.port.out.CreateAccountPort;
 import com.lucas.bank.account.domain.Account;
 import com.lucas.bank.shared.adapters.UseCase;
 import com.lucas.bank.shared.persistenceManager.UnitOfWork;
+import com.lucas.bank.shared.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Date;
 
 @RequiredArgsConstructor
 @UseCase
@@ -25,7 +25,7 @@ public class CreateAccountService implements CreateAccountUseCase {
                 .holderName(command.getHolderName())
                 .holderBirthDate(command.getHolderBirthDate())
                 .active(false)
-                .createdAt(new Date())
+                .createdAt(DateTimeUtil.nowWithTimeZone())
                 .build();
 
         var result = createAccountPort.createAccount(account, unitOfWork);

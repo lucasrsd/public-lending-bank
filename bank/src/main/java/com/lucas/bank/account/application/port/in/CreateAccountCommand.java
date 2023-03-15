@@ -7,8 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -18,9 +17,9 @@ public class CreateAccountCommand extends SelfValidating<CreateAccountCommand> {
     private final String holderName;
 
     @NotNull
-    private final Date holderBirthDate;
+    private final LocalDateTime holderBirthDate;
 
-    public CreateAccountCommand(String holderName, Date holderBirthDate) {
+    public CreateAccountCommand(String holderName, LocalDateTime holderBirthDate) {
         this.holderName = holderName;
         this.holderBirthDate = holderBirthDate;
         this.validateSelf();

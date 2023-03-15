@@ -1,5 +1,6 @@
 # Lending bank
-#### This project is just a personal study, using all knowledge from public sources.
+#### This project is just a personal studying, trying to create a transactional bank environment running with multi-active regions.
+
 
 ## Features
 - Loan simulation
@@ -21,6 +22,13 @@
 - Single table design (DynamoDB)
 - Scalable and distributed batch processing
 
+## Multi-Region Active-Active (Ireland, Frankfurt, and Stockholm) 
+
+![](docs/Multi-RegionActive-Active.jpg)
+
+### Challenges and trade-offs
+- Distributed Ids -> Currently each region Id generator is parsed to a billion prefix, e.g.: Ireland: 1000000000 + atomic counter, Frankfurt: 2000000000 + atomic counter
+- Transactions -> DynamoDB provides single region ACID transactions guarantees, not globally, the (ongoing) proposal would be to create a Round robin algorithm and force the same path param to be redirected to the same region, but Round robin could be a challenge using route 53, which is recommended for production environments
 ## Distributed batch proposal
 
 ![](docs/AccrualBatchProposal.jpg)
@@ -42,8 +50,8 @@
 #### POST /api/loan
 ```json
 {
-  "accountId": 1678226537787,
-  "amount":  10000,
+  "accountId": 2000000052,
+  "amount": 10000,
   "term": 4,
   "interestRate": 16.55,
   "amortizationType": "PRICE",
@@ -58,20 +66,21 @@
 ```json
 {
   "loan": {
-    "loanId": 1678227362143,
-    "accountId": 1678226537787,
+    "loanId": 1000000076,
+    "accountId": 2000000052,
     "type": "PRICE",
-    "amount": 10101.33133672,
+    "amount": 10101.33,
     "state": "DRAFT",
     "term": 4,
     "interestFrequency": "YEAR",
     "interestRate": 16.55,
-    "creationDate": "2023-03-07T22:16:02.000Z",
-    "disbursementDate": "2023-03-07T00:00:00.000Z",
-    "lastAccrualDate": null,
+    "creationDate": "2023-03-15T20:28:34.882",
+    "disbursementDate": "2023-03-07T00:00:00",
+    "lastAccrualDate": "2023-03-15T20:28:34.861",
+    "accruedInterest": 34.39,
     "additionalInformation": [
-      "Daily interest: 0.04197000 %",
-      "Monthly interest: 1.28443000 %",
+      "Daily interest: 0.0425508000 %",
+      "Monthly interest: 1.2844303000 %",
       "Yearly interest: 16.55 %"
     ]
   },
@@ -80,111 +89,111 @@
       "number": 1,
       "amortizationType": "PRICE",
       "state": "PENDING",
-      "dueDate": "2023-04-07",
+      "dueDate": "2023-04-07T00:00:00",
       "paymentDate": null,
       "principal": {
-        "amount": 2477.19606966,
+        "amount": 2477.2,
         "paid": 0
       },
       "interest": {
-        "amount": 129.74453009,
+        "amount": 129.74,
         "paid": 0
       },
       "tax": {
-        "amount": 25.58953518,
+        "amount": 25.59,
         "paid": 0
       },
-      "installmentAmount": 2632.53013493,
-      "remainingBalance": 7624.13526706,
+      "installmentAmount": 2632.53,
+      "remainingBalance": 7624.13,
       "taxComposition": {
-        "ADDITIONAL_IOF": 9.41334506,
-        "DAILY_IOF": 6.29703241
+        "ADDITIONAL_IOF": 9.41,
+        "DAILY_IOF": 6.3
       }
     },
     {
       "number": 2,
       "amortizationType": "PRICE",
       "state": "PENDING",
-      "dueDate": "2023-05-08",
+      "dueDate": "2023-05-08T00:00:00",
       "paymentDate": null,
       "principal": {
-        "amount": 2509.01391914,
+        "amount": 2509.01,
         "paid": 0
       },
       "interest": {
-        "amount": 97.92668061,
+        "amount": 97.93,
         "paid": 0
       },
       "tax": {
-        "amount": 25.58953518,
+        "amount": 25.59,
         "paid": 0
       },
-      "installmentAmount": 2632.53013493,
-      "remainingBalance": 5115.12134792,
+      "installmentAmount": 2632.53,
+      "remainingBalance": 5115.12,
       "taxComposition": {
-        "ADDITIONAL_IOF": 9.53425289,
-        "DAILY_IOF": 12.75582676
+        "ADDITIONAL_IOF": 9.53,
+        "DAILY_IOF": 12.76
       }
     },
     {
       "number": 3,
       "amortizationType": "PRICE",
       "state": "PENDING",
-      "dueDate": "2023-06-07",
+      "dueDate": "2023-06-07T00:00:00",
       "paymentDate": null,
       "principal": {
-        "amount": 2541.24044662,
+        "amount": 2541.24,
         "paid": 0
       },
       "interest": {
-        "amount": 65.70015313,
+        "amount": 65.7,
         "paid": 0
       },
       "tax": {
-        "amount": 25.58953518,
+        "amount": 25.59,
         "paid": 0
       },
-      "installmentAmount": 2632.53013493,
-      "remainingBalance": 2573.8809013,
+      "installmentAmount": 2632.53,
+      "remainingBalance": 2573.88,
       "taxComposition": {
-        "ADDITIONAL_IOF": 9.6567137,
-        "DAILY_IOF": 19.17111793
+        "ADDITIONAL_IOF": 9.66,
+        "DAILY_IOF": 19.17
       }
     },
     {
       "number": 4,
       "amortizationType": "PRICE",
       "state": "PENDING",
-      "dueDate": "2023-07-07",
+      "dueDate": "2023-07-07T00:00:00",
       "paymentDate": null,
       "principal": {
-        "amount": 2573.8809013,
+        "amount": 2573.88,
         "paid": 0
       },
       "interest": {
-        "amount": 33.05969846,
+        "amount": 33.06,
         "paid": 0
       },
       "tax": {
-        "amount": 25.58953518,
+        "amount": 25.59,
         "paid": 0
       },
-      "installmentAmount": 2632.53013494,
+      "installmentAmount": 2632.53,
       "remainingBalance": 0,
       "taxComposition": {
-        "ADDITIONAL_IOF": 9.78074742,
-        "DAILY_IOF": 25.74910454
+        "ADDITIONAL_IOF": 9.78,
+        "DAILY_IOF": 25.75
       }
     }
   ],
   "installmentDetails": {
-    "installmentsTotalAmount": 10530.12053973,
-    "principalTotalAmount": 10101.33133672,
-    "interestTotalAmount": 326.43106229,
-    "taxesTotalAmount": 102.35814072,
+    "installmentsTotalAmount": 10530.12,
+    "principalTotalAmount": 10101.33,
+    "interestTotalAmount": 326.43,
+    "taxesTotalAmount": 102.36,
     "taxes": {
-      "ADDITIONAL_IOF": 38.38505907,
-      "DAILY_IOF": 63.97308164
+      "ADDITIONAL_IOF": 38.38,
+      "DAILY_IOF": 63.98
     }
   }
 }
@@ -195,6 +204,8 @@
 ## Setup
 
 #### Credentials and env variables
+
+AWS_REGION =;
 
 AWS_PROFILE={YOUR_PROFILE};
 

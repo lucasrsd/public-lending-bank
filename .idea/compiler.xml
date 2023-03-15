@@ -11,5 +11,10 @@
         <module name="bank.main" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="bank" target="11" />
+      <module name="bank.test" target="11" />
+      <module name="com.lucas.bank.main" target="11" />
+    </bytecodeTargetLevel>
   </component>
 </project>

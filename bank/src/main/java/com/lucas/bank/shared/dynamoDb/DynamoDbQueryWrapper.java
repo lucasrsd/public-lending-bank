@@ -5,10 +5,14 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.Condition;
+import com.amazonaws.services.dynamodbv2.model.ReturnConsumedCapacity;
 import com.lucas.bank.shared.staticInformation.StaticInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 
@@ -18,6 +22,8 @@ import java.util.Map;
 
 @Component
 public class DynamoDbQueryWrapper<T> {
+
+    private final Logger LOG = LoggerFactory.getLogger(DynamoDbDistributedLock.class);
     private DynamoDBMapper mapper;
     private Class<T> parserType;
 
@@ -25,7 +31,7 @@ public class DynamoDbQueryWrapper<T> {
     }
 
     public DynamoDbQueryWrapper(Class<T> parserType) {
-        var client = AmazonDynamoDBClientBuilder.standard().withRegion(StaticInformation.AWS_REGION_STRING).build();
+        var client = AmazonDynamoDBClientBuilder.standard().withRegion(StaticInformation.getAwsRegion()).build();
         this.mapper = new DynamoDBMapper(client);
         this.parserType = parserType;
     }
@@ -43,6 +49,19 @@ public class DynamoDbQueryWrapper<T> {
 
         DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
                 .withFilterExpression("begins_with(pk, :prefix) and sk = :sk")
+                .withExpressionAttributeValues(eav);
+
+        return mapper.scan(this.parserType, scanExpression);
+    }
+
+    public List<T> listByPkBeginsWithAndSkBeginsWith(String pkPrefix, String skPrefix) {
+
+        Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+        eav.put(":pkPrefix", new AttributeValue().withS(pkPrefix));
+        eav.put(":skPrefix", new AttributeValue().withS(skPrefix));
+
+        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
+                .withFilterExpression("begins_with(pk, :pkPrefix) and begins_with(sk, :skPrefix)")
                 .withExpressionAttributeValues(eav);
 
         return mapper.scan(this.parserType, scanExpression);

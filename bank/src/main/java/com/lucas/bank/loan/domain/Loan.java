@@ -5,7 +5,7 @@ import com.lucas.bank.interest.domain.Interest;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -20,9 +20,9 @@ public class Loan {
     private LoanState state;
     private Integer term;
     private Interest interest;
-    private Date creationDate;
-    private Date disbursementDate;
-    private Date lastAccrualDate;
+    private LocalDateTime creationDate;
+    private LocalDateTime disbursementDate;
+    private LocalDateTime lastAccrualDate;
     private BigDecimal accruedInterest;
     private List<String> additionalInformation;
     private Integer batchBlock;

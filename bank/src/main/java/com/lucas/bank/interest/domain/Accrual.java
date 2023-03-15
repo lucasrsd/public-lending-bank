@@ -9,15 +9,13 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import static com.lucas.bank.shared.staticInformation.StaticInformation.MONTH_PERIOD;
-
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Data
 @Builder
 public class Accrual {
     public BigDecimal dailyAccrual(BigDecimal amount, Interest interest, Long numberOfdays) {
         BigDecimal dailyInterestRate = Interest.cloneAndConvert(interest, InterestFrequency.DAY).getRateToCalculate();
-        BigDecimal dailyAccrual = (amount.multiply(dailyInterestRate)).multiply(new BigDecimal(numberOfdays)).setScale(StaticInformation.PRECISION_SCALE, RoundingMode.HALF_DOWN);
-        return dailyAccrual;
+        BigDecimal dailyAccrual = (amount.multiply(dailyInterestRate)).multiply(new BigDecimal(numberOfdays)).setScale(StaticInformation.CALCULATION_PRECISION_SCALE, RoundingMode.HALF_DOWN);
+        return dailyAccrual.setScale(StaticInformation.TRANSACTION_PRECISION_SCALE, StaticInformation.TRANSACTION_ROUNDING_MODE);
     }
 }

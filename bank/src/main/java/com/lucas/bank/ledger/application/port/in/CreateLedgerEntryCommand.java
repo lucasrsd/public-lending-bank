@@ -8,7 +8,7 @@ import lombok.Value;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -33,7 +33,7 @@ public class CreateLedgerEntryCommand {
     private final LedgerAccount ledgerAccount;
     
     @NotNull
-    private final Date bookingDate;
+    private final LocalDateTime bookingDate;
 
     public CreateLedgerEntryCommand(Long loanId,
                                     Long transactionId,
@@ -41,7 +41,7 @@ public class CreateLedgerEntryCommand {
                                     Side type,
                                     BigDecimal amount,
                                     LedgerAccount ledgerAccount,
-                                    Date bookingDate) {
+                                    LocalDateTime bookingDate) {
         this.loanId = loanId;
         this.transactionId = transactionId;
         this.name = name;

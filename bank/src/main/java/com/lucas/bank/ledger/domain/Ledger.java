@@ -1,9 +1,10 @@
 package com.lucas.bank.ledger.domain;
 
+import com.lucas.bank.shared.util.DateTimeUtil;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -16,9 +17,9 @@ public class Ledger {
     private final String type;
     private final Side side;
     private final BigDecimal amount;
-    private final LedgerAccount ledger;
-    private final Date date;
-    private final Date bookingDate;
+    private final LedgerAccount account;
+    private final LocalDateTime date;
+    private final LocalDateTime bookingDate;
 
     public static Ledger forCredit(Long loanId, Long transactionId, String type, BigDecimal amount, LedgerAccount account){
         return Ledger
@@ -29,9 +30,9 @@ public class Ledger {
                 .type(type)
                 .side(Side.CREDIT)
                 .amount(amount)
-                .ledger(account)
-                .date(new Date())
-                .bookingDate(new Date())
+                .account(account)
+                .date(DateTimeUtil.nowWithTimeZone())
+                .bookingDate(DateTimeUtil.nowWithTimeZone())
                 .build();
     }
 
@@ -44,9 +45,9 @@ public class Ledger {
                 .type(type)
                 .side(Side.DEBIT)
                 .amount(amount.negate())
-                .ledger(account)
-                .date(new Date())
-                .bookingDate(new Date())
+                .account(account)
+                .date(DateTimeUtil.nowWithTimeZone())
+                .bookingDate(DateTimeUtil.nowWithTimeZone())
                 .build();
     }
 }

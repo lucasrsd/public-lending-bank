@@ -5,6 +5,7 @@ import com.lucas.bank.installment.domain.Installment;
 import com.lucas.bank.interest.application.port.in.AccrualUseCase;
 import com.lucas.bank.loan.domain.LoanState;
 import com.lucas.bank.loan.domain.AmortizationType;
+import com.lucas.bank.shared.ParameterConsistencyException;
 import com.lucas.bank.shared.adapters.UseCase;
 import com.lucas.bank.installment.application.port.in.CreateInstallmentCommand;
 import com.lucas.bank.installment.application.port.in.CreateInstallmentUseCase;
@@ -15,6 +16,7 @@ import com.lucas.bank.loan.application.port.in.CreateLoanUseCase;
 import com.lucas.bank.loan.application.port.out.CreateLoanPort;
 import com.lucas.bank.loan.domain.Loan;
 import com.lucas.bank.shared.persistenceManager.UnitOfWork;
+import com.lucas.bank.shared.staticInformation.StaticInformation;
 import com.lucas.bank.shared.util.DateTimeUtil;
 import com.lucas.bank.tax.application.port.in.CalculateTaxesCommand;
 import com.lucas.bank.tax.application.port.in.CalculateTaxesUseCase;
@@ -23,9 +25,11 @@ import com.lucas.bank.tax.domain.InstallmentDetails;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -41,14 +45,14 @@ public class CreateLoanService implements CreateLoanUseCase {
 
     public static Loan of(Long accountId, String type, BigDecimal amount, BigDecimal interestRate, String interestFrequency, Integer term) {
         var interest = Interest.of(interestRate, InterestFrequency.valueOf(interestFrequency));
-        return Loan.builder().accountId(accountId).type(AmortizationType.valueOf(type)).amount(amount).state(LoanState.DRAFT).term(term).interest(interest).creationDate(new Date()).build();
+        return Loan.builder().accountId(accountId).type(AmortizationType.valueOf(type)).amount(amount).state(LoanState.DRAFT).term(term).interest(interest).creationDate(DateTimeUtil.nowWithTimeZone()).build();
     }
 
     @Override
     public Long createLoan(CreateLoanCommand command, UnitOfWork unitOfWork) {
 
-        Date disbursementDate = command.getDisbursementDate() == null
-                ? new Date()
+        LocalDateTime disbursementDate = command.getDisbursementDate() == null
+                ? DateTimeUtil.nowWithTimeZone()
                 : command.getDisbursementDate();
 
         var account = loadAccountQuery.loadAccount(command.getAccountId());
@@ -72,19 +76,21 @@ public class CreateLoanService implements CreateLoanUseCase {
         }
 
         var daysFromDisbursement = ChronoUnit.DAYS.between(DateTimeUtil.convertToMidnight(disbursementDate),
-                DateTimeUtil.convertToMidnight(new Date()));
+                DateTimeUtil.convertToMidnight(DateTimeUtil.nowWithTimeZone()));
 
         if (daysFromDisbursement < 0){
-            throw new RuntimeException("Disbursement date cannot be in the future.");
+            throw new ParameterConsistencyException("Disbursement date cannot be in the future.");
         }
 
-        Date lastAccrualDate = null;
+        LocalDateTime lastAccrualDate = null;
         BigDecimal accruedInterest = null;
 
         if(daysFromDisbursement > 0L){
             accruedInterest = accrualUseCase.calculateDailyAccrual(totalAmount, interest, daysFromDisbursement);
-            lastAccrualDate = new Date();
+            lastAccrualDate = DateTimeUtil.nowWithTimeZone();
         }
+
+        totalAmount = totalAmount.setScale(StaticInformation.TRANSACTION_PRECISION_SCALE, StaticInformation.TRANSACTION_ROUNDING_MODE);
 
         var loan = Loan
                 .builder()
@@ -96,7 +102,7 @@ public class CreateLoanService implements CreateLoanUseCase {
                 .term(command.getTerm())
                 .lastAccrualDate(lastAccrualDate)
                 .accruedInterest(accruedInterest)
-                .creationDate(new Date())
+                .creationDate(DateTimeUtil.nowWithTimeZone())
                 .disbursementDate(disbursementDate)
                 .build();
 
@@ -105,7 +111,7 @@ public class CreateLoanService implements CreateLoanUseCase {
         var createInstallmentCommand = CreateInstallmentCommand
                 .builder()
                 .loanId(createdLoan)
-                .amount(loan.getAmount())
+                .amount(totalAmount)
                 .term(loan.getTerm())
                 .rate(calculationInterestRate)
                 .amortizationType(loan.getType().name())
@@ -118,7 +124,7 @@ public class CreateLoanService implements CreateLoanUseCase {
         return createdLoan;
     }
 
-    private TaxAggregate calculateTaxesIfPresent(BigDecimal amount, Integer term, String loanType, Date disbursementDate, String taxType, BigDecimal rate) {
+    private TaxAggregate calculateTaxesIfPresent(BigDecimal amount, Integer term, String loanType, LocalDateTime disbursementDate, String taxType, BigDecimal rate) {
 
         if (taxType == null) return null;
 

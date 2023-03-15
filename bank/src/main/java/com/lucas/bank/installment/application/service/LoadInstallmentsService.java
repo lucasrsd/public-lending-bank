@@ -9,7 +9,9 @@ import com.lucas.bank.installment.domain.Installment;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @UseCase

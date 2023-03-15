@@ -21,7 +21,7 @@ public class CreateInstallmentService implements CreateInstallmentUseCase {
     @Override
     public void create(CreateInstallmentCommand command, UnitOfWork unitOfWork) {
         if (command.getLoanId() == null)
-            throw new RuntimeException("Loan Id null");
+            throw new RuntimeException("Loan id null received through command");
 
         var installments = preview(command);
         createInstallmentPort.createInstallment(AmortizationType.valueOf(command.getAmortizationType()), command.getLoanId(), installments, unitOfWork);

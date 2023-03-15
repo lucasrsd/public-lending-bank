@@ -10,6 +10,7 @@ import com.lucas.bank.shared.staticInformation.StaticMessagingRouter;
 import com.lucas.bank.shared.adapters.DistributedLock;
 import com.lucas.bank.shared.sqs.SqsWrapper;
 import com.lucas.bank.shared.persistenceManager.UnitOfWork;
+import com.lucas.bank.shared.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -109,7 +109,7 @@ public class SqsEventHandler {
 
     private void processAccrual(Long loanId) {
         log.info("Processing loan accrual, id: {}", loanId);
-        var accrualDate = new Date();
+        var accrualDate = DateTimeUtil.nowWithTimeZone();
 
         distributedLock.tryAcquire(loanId.toString());
         var transaction = UnitOfWork.newInstance();

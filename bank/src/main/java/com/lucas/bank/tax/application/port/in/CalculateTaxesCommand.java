@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Value
@@ -20,12 +20,12 @@ public class CalculateTaxesCommand extends SelfValidating<CreateLoanCommand> {
     private final String taxType;
 
     @NotNull
-    private final Date disbusementDate;
+    private final LocalDateTime disbusementDate;
     @NotNull
     private final List<InstallmentDetails> installmentDetails;
 
     public CalculateTaxesCommand(String taxType,
-                                 Date disbusementDate,
+                                 LocalDateTime disbusementDate,
                                  List<InstallmentDetails> installmentDetails) {
         this.taxType = taxType;
         this.disbusementDate = disbusementDate;

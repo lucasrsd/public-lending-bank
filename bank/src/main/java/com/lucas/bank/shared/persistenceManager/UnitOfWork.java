@@ -1,12 +1,17 @@
 package com.lucas.bank.shared.persistenceManager;
 
 import com.lucas.bank.shared.dynamoDb.DynamoDbTransaction;
+import com.lucas.bank.shared.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 
 @RequiredArgsConstructor
 @Component
@@ -15,13 +20,13 @@ public class UnitOfWork {
     private final Logger LOG = LoggerFactory.getLogger(UnitOfWork.class);
 
     private final UUID transactionId;
-    private final Date transactionStartDate;
+    private final LocalDateTime transactionStartDate;
     private final List<Object> transactions;
     private final DynamoDbTransaction dynamoDbTransaction;
 
     private UnitOfWork() {
         transactionId = UUID.randomUUID();
-        transactionStartDate = new Date();
+        transactionStartDate = DateTimeUtil.nowWithTimeZone();
         transactions = new ArrayList<>();
         dynamoDbTransaction = new DynamoDbTransaction();
     }
@@ -43,6 +48,6 @@ public class UnitOfWork {
 
         transactions.clear();
 
-        LOG.info("Commit transaction, transaction id: {}, start date: {}, current size: {}", this.transactionId, this.transactionStartDate, this.transactions.size());
+        LOG.info("Commit transaction completed, transaction id: {}, start date: {}, current size: {}", this.transactionId, this.transactionStartDate, this.transactions.size());
     }
 }

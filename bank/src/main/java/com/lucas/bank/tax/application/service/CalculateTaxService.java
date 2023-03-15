@@ -1,5 +1,6 @@
 package com.lucas.bank.tax.application.service;
 
+import com.lucas.bank.shared.ParameterConsistencyException;
 import com.lucas.bank.shared.adapters.UseCase;
 import com.lucas.bank.tax.application.port.in.CalculateTaxesCommand;
 import com.lucas.bank.tax.application.port.in.CalculateTaxesUseCase;
@@ -40,6 +41,6 @@ public class CalculateTaxService implements CalculateTaxesUseCase {
                     .build();
         }
 
-        throw new RuntimeException("Invalid tax type");
+        throw new ParameterConsistencyException("Tax type " + command.getTaxType() + " not supported");
     }
 }

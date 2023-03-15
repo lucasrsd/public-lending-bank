@@ -3,7 +3,7 @@ package com.lucas.bank.installment.domain;
 import com.lucas.bank.loan.domain.AmortizationType;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 public class InstallmentFactory {
@@ -18,10 +18,10 @@ public class InstallmentFactory {
             instance.setLoanAmortizationType(amortizationType);
             return instance;
         }
-        throw new RuntimeException("Calculation type not supported");
+        throw new UnsupportedAmortizationException(amortizationType);
     }
 
-    public static Installment withInformation(AmortizationType type, Integer number, InstallmentState state, Date dueDate, Date paymentDate, BigDecimal principalAmount, BigDecimal interestAmount, BigDecimal installmentAmount, BigDecimal taxAmount, BigDecimal remainingBalance, Map<String, BigDecimal> taxComposition, BigDecimal paidPrincipal, BigDecimal paidInterest, BigDecimal paidTax) {
+    public static Installment withInformation(AmortizationType type, Integer number, InstallmentState state, LocalDateTime dueDate, LocalDateTime paymentDate, BigDecimal principalAmount, BigDecimal interestAmount, BigDecimal installmentAmount, BigDecimal taxAmount, BigDecimal remainingBalance, Map<String, BigDecimal> taxComposition, BigDecimal paidPrincipal, BigDecimal paidInterest, BigDecimal paidTax) {
         var instance = of(type);
 
         // ToDo - check better way to map repository POJO to multiple domain entities extended from same class

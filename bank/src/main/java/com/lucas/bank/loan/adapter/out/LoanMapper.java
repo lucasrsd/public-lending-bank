@@ -5,10 +5,7 @@ import com.lucas.bank.shared.util.DateTimeUtil;
 import com.lucas.bank.interest.domain.Interest;
 import com.lucas.bank.interest.domain.InterestFrequency;
 import com.lucas.bank.loan.domain.*;
-import com.lucas.bank.shared.staticInformation.StaticInformation;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
 
 @Component
 public class LoanMapper {

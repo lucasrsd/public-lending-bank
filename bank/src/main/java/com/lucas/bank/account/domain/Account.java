@@ -2,8 +2,7 @@ package com.lucas.bank.account.domain;
 
 import lombok.*;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Data
@@ -12,7 +11,7 @@ public class Account {
 
     private Long accountId;
     private String holderName;
-    private Date holderBirthDate;
+    private LocalDateTime holderBirthDate;
     private Boolean active;
-    private Date createdAt;
+    private LocalDateTime createdAt;
 }

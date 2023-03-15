@@ -4,6 +4,7 @@ import com.amazonaws.services.dynamodbv2.AcquireLockOptions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBLockClient;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBLockClientOptions;
 import com.amazonaws.services.dynamodbv2.LockItem;
+import com.lucas.bank.shared.DistributedLockException;
 import com.lucas.bank.shared.staticInformation.StaticInformation;
 import com.lucas.bank.shared.adapters.DistributedLock;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ public class DynamoDbDistributedLock implements DistributedLock {
     private LockItem lockedItem;
 
     public DynamoDbDistributedLock() {
-        this.client =  DynamoDbClient.builder().region(Region.of(StaticInformation.AWS_REGION_STRING)).build();
+        this.client =  DynamoDbClient.builder().region(Region.of(StaticInformation.getAwsRegion())).build();
         this.lockClient = new AmazonDynamoDBLockClient(
                 AmazonDynamoDBLockClientOptions.builder(this.client, StaticInformation.LOCK_TABLE_NAME)
                         .withTimeUnit(TimeUnit.SECONDS)
@@ -41,7 +42,7 @@ public class DynamoDbDistributedLock implements DistributedLock {
         try {
             lockItem = this.lockClient.tryAcquireLock(AcquireLockOptions.builder(key).build());
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new DistributedLockException(e.getMessage());
         }
         if (lockItem.isPresent()) {
             LOG.info("Lock acquired for partition key: {}", key);
@@ -49,7 +50,7 @@ public class DynamoDbDistributedLock implements DistributedLock {
             return lockedItem;
         } else {
             LOG.error("Fail to acquire lock for partition key: {}", key);
-            throw new RuntimeException("Fail to acquire lock");
+            throw new DistributedLockException("Fail to acquire lock for partition key: " + key);
         }
     }
 

@@ -15,7 +15,7 @@ public class DynamoDbTransaction {
     private DynamoDBMapper mapper;
 
     public DynamoDbTransaction() {
-        this.client = AmazonDynamoDBClientBuilder.standard().withRegion(StaticInformation.AWS_REGION_STRING).build();
+        this.client = AmazonDynamoDBClientBuilder.standard().withRegion(StaticInformation.getAwsRegion()).build();
         this.mapper = new DynamoDBMapper(client);
     }
 

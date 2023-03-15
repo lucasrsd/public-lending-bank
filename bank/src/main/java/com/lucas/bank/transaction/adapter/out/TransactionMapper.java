@@ -5,7 +5,6 @@ import com.lucas.bank.transaction.domain.Transaction;
 import com.lucas.bank.transaction.domain.TransactionType;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 
 @Component
 public class TransactionMapper {
