@@ -2,7 +2,6 @@ package com.lucas.bank.transaction.application.service;
 
 import com.lucas.bank.installment.application.port.in.InstallmentRepaymentUseCase;
 import com.lucas.bank.installment.application.port.out.InstallmentRepaymentAggregate;
-import com.lucas.bank.installment.domain.Installment;
 import com.lucas.bank.ledger.application.port.in.CreateLoanLedgerEntryUseCase;
 import com.lucas.bank.loan.application.port.in.LoadLoanQuery;
 import com.lucas.bank.loan.application.port.in.LoanTransactionUseCase;
@@ -16,7 +15,6 @@ import com.lucas.bank.transaction.domain.TransactionType;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -43,7 +41,7 @@ public class RepayLoanService implements RepayLoanUseCase {
 
         var newInstallments = installmentRepaymentUseCase.calculateRepayment(loan.getInstallments().getInstallments(), amount);
 
-        loanTransactionUseCase.makeRepayment(loanId, newInstallments.getInstallments(), unitOfWork);
+        loanTransactionUseCase.repay(loanId, newInstallments.getInstallments(), unitOfWork);
         var transaction = createTransactionPort.createTransaction(Transaction.withoutId(TransactionType.REPAYMENT, loanId, amount), unitOfWork);
 
         if (newInstallments.getAffectedPrincipal().compareTo(BigDecimal.ZERO) > 0)

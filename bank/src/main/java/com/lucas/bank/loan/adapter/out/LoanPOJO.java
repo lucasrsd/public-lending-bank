@@ -1,8 +1,7 @@
 package com.lucas.bank.loan.adapter.out;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.amazonaws.services.dynamodbv2.datamodeling.*;
+import com.lucas.bank.shared.staticInformation.StaticInformation;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -20,6 +19,11 @@ public class LoanPOJO {
     public static final String pkPrefix = "loan#";
     public static final String skPrefix = "contract";
 
+    public static Boolean ofType(String hash, String sort)
+    {
+        return hash.startsWith(pkPrefix) && sort.equals(skPrefix);
+    }
+
     @DynamoDBHashKey
     private String pk;
 
@@ -31,6 +35,8 @@ public class LoanPOJO {
     private String type;
     private Long accountId;
     private BigDecimal amount;
+
+    @DynamoDBIndexHashKey(globalSecondaryIndexName = StaticInformation.LOAN_STATE_BY_BATCH_BLOCK_GSI_INDEX)
     private String loanState;
     private Integer term;
     private BigDecimal interestRate;
@@ -40,6 +46,8 @@ public class LoanPOJO {
     private List<String> additionalInformation;
     private Long lastAccrualDate;
     private BigDecimal accruedInterest;
+
+    @DynamoDBIndexRangeKey(globalSecondaryIndexName = StaticInformation.LOAN_STATE_BY_BATCH_BLOCK_GSI_INDEX)
     private Integer batchBlock;
 
     public LoanPOJO() {
@@ -47,6 +55,10 @@ public class LoanPOJO {
 
     public static LoanPOJO of(Long loanId){
         return LoanPOJO.builder().loanId(loanId).build();
+    }
+
+    public static LoanPOJO of(String state, Integer batchBlock){
+        return LoanPOJO.builder().loanState(state).batchBlock(batchBlock).build();
     }
 
     public static String buildPk(Long loanId) {

@@ -7,6 +7,7 @@ import com.lucas.bank.shared.adapters.WebAdapter;
 import com.lucas.bank.shared.persistenceManager.UnitOfWork;
 import com.lucas.bank.transaction.adapter.in.contracts.DisburseLoanRequest;
 import com.lucas.bank.transaction.adapter.in.contracts.RepayLoanRequest;
+import com.lucas.bank.transaction.adapter.in.contracts.RepayLoanResponse;
 import com.lucas.bank.transaction.application.port.in.DisburseLoanUseCase;
 import com.lucas.bank.transaction.application.port.in.LoadTransactionQuery;
 import com.lucas.bank.transaction.application.port.in.RepayLoanUseCase;
@@ -48,7 +49,7 @@ public class LoanTransactionsController {
     }
 
     @PostMapping(path = "repayment")
-    InstallmentRepaymentAggregate repayment(@Valid @RequestBody RepayLoanRequest request) {
+    RepayLoanResponse repayment(@Valid @RequestBody RepayLoanRequest request) {
         distributedLock.tryAcquire(request.getLoanId().toString());
         var transaction = UnitOfWork.newInstance();
 
@@ -57,6 +58,6 @@ public class LoanTransactionsController {
         transaction.commit();
         distributedLock.release();
 
-        return result;
+        return RepayLoanResponse.mapToResponse(result);
     }
 }

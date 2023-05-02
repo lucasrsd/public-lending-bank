@@ -37,7 +37,7 @@ public class LoanTransactionServiceTransaction implements LoanTransactionUseCase
     private final InterestAppliedLoanUseCase interestAppliedLoanUseCase;
 
     @Override
-    public void activateLoan(Long loanId, UnitOfWork unitOfWork) {
+    public void disburse(Long loanId, UnitOfWork unitOfWork) {
         var loan = loadLoanPort.loadLoan(loanId);
 
         if (!loan.canDisburse()) {
@@ -45,11 +45,12 @@ public class LoanTransactionServiceTransaction implements LoanTransactionUseCase
         }
 
         loan.setState(LoanState.ACTIVE);
+        loan.setDisbursementDate(DateTimeUtil.nowWithTimeZone());
         updateLoanPort.updateLoan(loan, unitOfWork);
     }
 
     @Override
-    public void makeRepayment(Long loanId, List<Installment> newInstallments, UnitOfWork unitOfWork) {
+    public void repay(Long loanId, List<Installment> newInstallments, UnitOfWork unitOfWork) {
 
         var loan = loadLoanPort.loadLoan(loanId);
 
@@ -88,7 +89,7 @@ public class LoanTransactionServiceTransaction implements LoanTransactionUseCase
 
             // ToDo - check if interest has already been applied for the date
 
-            log.info("Loan: {} has an installment with due date = today, applying interest", loanId);
+            log.info("Loan: {} has an installment with due date = today, applying interest {}", loanId, dailyAccrualAmount);
 
             if (dailyAccrualAmount.compareTo(BigDecimal.ZERO) > 0){
                 interestAppliedLoanUseCase.applyInterest(loanId, dailyAccrualAmount, unitOfWork);
@@ -96,7 +97,7 @@ public class LoanTransactionServiceTransaction implements LoanTransactionUseCase
 
             loan.setAccruedInterest(BigDecimal.ZERO);
         } else {
-            log.info("Loan: {} doesn't have installments with due date = today, updating last accrual and skipping", loanId);
+            log.info("Loan: {} doesn't have installments with due date = today, updating last accrual ({}) and skipping", loanId, dailyAccrualAmount);
             loan.setAccruedInterest(dailyAccrualAmount);
         }
 

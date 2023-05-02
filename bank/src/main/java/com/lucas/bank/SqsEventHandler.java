@@ -5,11 +5,13 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.google.gson.Gson;
 import com.lucas.bank.loan.application.port.in.LoadLoanQuery;
 import com.lucas.bank.loan.application.port.in.LoanTransactionUseCase;
+import com.lucas.bank.projector.application.port.in.CreateProjectionUseCase;
 import com.lucas.bank.shared.staticInformation.StaticInformation;
 import com.lucas.bank.shared.staticInformation.StaticMessagingRouter;
 import com.lucas.bank.shared.adapters.DistributedLock;
 import com.lucas.bank.shared.sqs.SqsWrapper;
 import com.lucas.bank.shared.persistenceManager.UnitOfWork;
+import com.lucas.bank.shared.stream.StreamEventDTO;
 import com.lucas.bank.shared.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -33,6 +35,7 @@ public class SqsEventHandler {
     private final SqsWrapper sqsWrapper;
     private final LoadLoanQuery loadLoanQuery;
     private final LoanTransactionUseCase loanTransactionUseCase;
+    private final CreateProjectionUseCase createProjectionUseCase;
 
     @RequestMapping(path = "/event-sqs", method = RequestMethod.POST)
     public SQSBatchResponse eventSqs(@RequestParam("type") String type, @RequestBody StreamLambdaHandler.AnnotatedSQSEvent message) {
@@ -71,6 +74,11 @@ public class SqsEventHandler {
                 if (route.equals(StaticMessagingRouter.ROUTE_LOAN_ACCRUAL)) {
                     AccrualDto accrualDto = new Gson().fromJson(event.getBody(), AccrualDto.class);
                     processAccrual(accrualDto.loanId);
+                }
+
+                if (route.equals(StaticMessagingRouter.ROUTE_BANK_SQL_PROJECTOR)){
+                    StreamEventDTO streamDto = new Gson().fromJson(event.getBody(), StreamEventDTO.class);
+                    createProjectionUseCase.project(streamDto);
                 }
 
                 log.info("Finish");

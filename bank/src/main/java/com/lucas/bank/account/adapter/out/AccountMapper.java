@@ -14,7 +14,6 @@ class AccountMapper {
                 .accountId(account.getAccountId())
                 .holderName(account.getHolderName())
                 .holderBirthDate(DateTimeUtil.from(account.getHolderBirthDate()))
-                .active(account.getActive())
                 .createdAt(DateTimeUtil.from(account.getCreatedAt()))
                 .build();
     }
@@ -26,7 +25,6 @@ class AccountMapper {
                 .holderName(account.getHolderName())
                 .holderBirthDate(DateTimeUtil.to(account.getHolderBirthDate()))
                 .createdAt(DateTimeUtil.to(account.getCreatedAt()))
-                .active(account.getActive())
                 .build();
     }
 

@@ -1,8 +1,6 @@
 package com.lucas.bank.account.adapter.out;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import lombok.*;
 
 import static com.lucas.bank.shared.staticInformation.StaticInformation.SINGLE_TABLE_NAME;
@@ -17,6 +15,11 @@ public class AccountPOJO {
     private static final String pkPrefix = "account#";
     private static final String skPrefix = "customer-account";
 
+    public static Boolean ofType(String hash, String sort)
+    {
+        return hash.startsWith(pkPrefix) && sort.equals(skPrefix);
+    }
+
     @DynamoDBHashKey
     private String pk;
 
@@ -27,7 +30,6 @@ public class AccountPOJO {
     private String holderName;
     private Long holderBirthDate;
     private Long createdAt;
-    private Boolean active;
 
     public AccountPOJO() {
     }

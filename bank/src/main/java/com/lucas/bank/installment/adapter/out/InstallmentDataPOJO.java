@@ -22,6 +22,11 @@ public class InstallmentDataPOJO {
     private static final String pkPrefix = "loan#";
     private static final String skPrefix = "installments";
 
+    public static Boolean ofType(String hash, String sort)
+    {
+        return hash.startsWith(pkPrefix) && sort.equals(skPrefix);
+    }
+
     @DynamoDBHashKey
     private String pk;
 

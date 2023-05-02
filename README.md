@@ -13,23 +13,34 @@
 - Repayment
 - Transactions
 - Ledger accounts and journal transactions
+- Reporting (API or MySQL)
 
 ## Architecture proposal
 - Java Spring Boot
 - Hexagonal architecture
+- CQRS
 - Distributed lock (e.g.: account id)
-- Distributed batch
+- Distributed batch processing
 - Single table design (DynamoDB)
-- Scalable and distributed batch processing
+- Isolated reporting MySQL
 
 ## Multi-Region Active-Active (Ireland, Frankfurt, and Stockholm) 
 
 ![](docs/Multi-RegionActive-Active.jpg)
 
 ### Challenges and trade-offs
-- Distributed Ids -> Currently each region Id generator is parsed to a billion prefix, e.g.: Ireland: 1000000000 + atomic counter, Frankfurt: 2000000000 + atomic counter
+- Distributed Ids -> Currently each region ID generator is parsed to a billion prefix, e.g.: Ireland: 1000000000 + atomic counter, Frankfurt: 2000000000 + atomic counter
 - Transactions -> DynamoDB provides single region ACID transactions guarantees, not globally, the (ongoing) proposal would be to create a Round robin algorithm and force the same path param to be redirected to the same region, but Round robin could be a challenge using route 53, which is recommended for production environments
-## Distributed batch proposal
+
+## Reporting
+
+![](docs/Reporting.jpg)
+
+### Challenges and trade-offs
+- Multi-Region RDS -> Work in progress....
+
+
+## Distributed batch
 
 ![](docs/AccrualBatchProposal.jpg)
 
@@ -212,6 +223,10 @@ AWS_PROFILE={YOUR_PROFILE};
 AWS_ACCESS_KEY_ID=;
 
 AWS_SECRET_ACCESS_KEY=;
+
+DATABASE_URL=;
+
+DATABASE_SECRET_NAME=;
 
 #### SAM
 

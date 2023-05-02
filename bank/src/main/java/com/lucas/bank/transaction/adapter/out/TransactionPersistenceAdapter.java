@@ -33,7 +33,7 @@ class TransactionPersistenceAdapter implements CreateTransactionPort, LoadTransa
 
     @Override
     public List<Transaction> forLoan(Long loanId) {
-        var transactionPOJOS =  transactionRepository.queryPkWithSkPrefix(TransactionPOJO.of(loanId), TransactionPOJO.skPrefix);
+        var transactionPOJOS =  transactionRepository.queryPkWithSkPrefix(TransactionPOJO.of(loanId), "sk", TransactionPOJO.skPrefix);
         List<Transaction> transactions = new ArrayList<>();
         transactionPOJOS.forEach(i -> transactions.add(transactionMapper.mapToDomainEntity(i)));
         return transactions;

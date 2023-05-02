@@ -1,12 +1,11 @@
 package com.lucas.bank.ledger.application.port.in;
 
 import com.lucas.bank.ledger.application.port.out.LedgerEntriesAggregate;
+import com.lucas.bank.ledger.application.port.out.LedgerSummaryAggregate;
 
-import java.math.BigDecimal;
-import java.util.Map;
+import java.util.List;
 
 public interface LoadLedgerQuery {
     LedgerEntriesAggregate loadLedgers(Long loanId);
-    Map<String, BigDecimal> summary();
-
+    List<LedgerSummaryAggregate> summary(SearchLedgerCommand searchLedgerCommand);
 }

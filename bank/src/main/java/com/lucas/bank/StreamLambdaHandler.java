@@ -9,22 +9,28 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.Headers;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.serverless.proxy.spring.SpringBootLambdaContainerHandler;
+import com.amazonaws.services.dynamodbv2.model.OperationType;
+import com.amazonaws.services.dynamodbv2.model.StreamRecord;
+import com.amazonaws.services.dynamodbv2.model.StreamViewType;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.google.gson.Gson;
+import com.lucas.bank.shared.util.DateTimeUtil;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,10 +41,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 // Link: https://github.com/huksley/serverless-java-spring-boot
+// Link dynamo: https://www.diversit.eu/post/2017/11/01/deserializing-aws-dynamo-event.html
 
 public class StreamLambdaHandler implements RequestStreamHandler {
     private static Logger log = LoggerFactory.getLogger(StreamLambdaHandler.class);
@@ -69,6 +78,8 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         log.info("Got event {} context {}", event);
 
         ObjectMapper mapper = LambdaContainerHandler.getObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
         mapper.registerModule(new JodaModule());
 
         SimpleModule module = new SimpleModule();
@@ -119,6 +130,12 @@ public class StreamLambdaHandler implements RequestStreamHandler {
                 log.info("Converted to {}", request);
                 AwsProxyResponse response = handler.proxy(request, context);
                 mapper.writeValue(outputStream, response);
+            }
+            else if ("aws:dynamodb".equals(eventSource)) {
+                request = convertToRequest(raw, event, DynamodbEvent.class.getName(), context, "dynamo");
+                log.info("Converted to {}", request);
+                AwsProxyResponse response = handler.proxy(request, context);
+                mapper.writeValue(outputStream, response);
             } else {
                 log.warn("Unhandled event type {}", eventSource);
             }
@@ -129,10 +146,14 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         }
     }
 
+    // Schedule
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AnnotatedScheduledEvent extends ScheduledEvent {
 
     }
+
+    // SNS
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AnnotatedSNSRecord extends SNSRecord {
@@ -163,6 +184,7 @@ public class StreamLambdaHandler implements RequestStreamHandler {
         }
     }
 
+    // SQS
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AnnotatedSQSMessage extends SQSMessage {
     }

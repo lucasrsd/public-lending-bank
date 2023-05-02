@@ -28,11 +28,11 @@ class LoanPersistenceAdapter implements CreateLoanPort, LoadLoanPort, UpdateLoan
     @Override
     public Long createLoan(Loan loan, UnitOfWork unitOfWork) {
 
-        if (loan.getLoanId() == null){
+        if (loan.getLoanId() == null) {
             loan.setLoanId(atomicCounter.generate());
         }
 
-        if (loan.getBatchBlock() == null){
+        if (loan.getBatchBlock() == null) {
             loan.setBatchBlock(StaticInformation.generateRandomBatchBlock());
         }
 
@@ -56,20 +56,12 @@ class LoanPersistenceAdapter implements CreateLoanPort, LoadLoanPort, UpdateLoan
     }
 
     @Override
-    public List<Loan> listLoans() {
-        var loansPOJO = loanRepository.listByPkBeginsWithAndSk(LoanPOJO.pkPrefix, LoanPOJO.skPrefix);
-        List<Loan> loans = new ArrayList<>();
-        loansPOJO.forEach(i -> loans.add(loanMapper.mapToDomainEntity(i)));
-        return loans;
-    }
-
-    @Override
-    public Map<Long, String> listLoanByBatchBlock(Integer batchBlock, String status) {
-        var loansPOJO = loanRepository.scanIndexByBatchBlockAndStatus(StaticInformation.LOAN_STATE_GSI_INDEX, batchBlock, status);
+    public Map<Long, String> listLoanByBatchBlock(Integer batchBlock, String state) {
+        var loansPOJO = loanRepository.queryIndexByKeyAndIntegerSk(LoanPOJO.of(state, batchBlock), StaticInformation.LOAN_STATE_BY_BATCH_BLOCK_GSI_INDEX, "batchBlock", batchBlock);
 
         Map<Long, String> loans = new HashMap<>();
 
-        for(LoanPOJO loan : loansPOJO){
+        for (LoanPOJO loan : loansPOJO) {
             loans.put(loan.getLoanId(), loan.getLoanState());
         }
 

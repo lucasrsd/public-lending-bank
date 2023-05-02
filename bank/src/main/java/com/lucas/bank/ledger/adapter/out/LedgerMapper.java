@@ -1,8 +1,12 @@
 package com.lucas.bank.ledger.adapter.out;
 
+import com.lucas.bank.ledger.application.port.out.LedgerSummaryAggregate;
 import com.lucas.bank.ledger.domain.*;
 import com.lucas.bank.shared.util.DateTimeUtil;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 
 @Component
@@ -46,6 +50,18 @@ public class LedgerMapper {
                 .ledgerAccountName(ledger.getAccount().getName())
                 .ledgerDate(DateTimeUtil.to(ledger.getDate()))
                 .ledgerBookingDate(DateTimeUtil.to(ledger.getBookingDate()))
+                .build();
+    }
+
+    LedgerSummaryAggregate mapToAggregate(LedgerSummaryPOJO ledgerSummaryPOJO){
+        return LedgerSummaryAggregate
+                .builder()
+                .date(ledgerSummaryPOJO.getDate().toLocalDate())
+                .side(ledgerSummaryPOJO.getSide())
+                .type(ledgerSummaryPOJO.getType())
+                .ledgerName(ledgerSummaryPOJO.getLedgerName())
+                .amount(ledgerSummaryPOJO.getAmount())
+                .transactionsCount(ledgerSummaryPOJO.getTransactionsCount())
                 .build();
     }
 }

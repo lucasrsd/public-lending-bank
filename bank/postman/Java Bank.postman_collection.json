@@ -7,321 +7,385 @@
 	},
 	"item": [
 		{
-			"name": "Get account",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{host}}/api/account/100234337",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"account",
-						"100234337"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Loan",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{host}}/api/loan/100234334",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"loan",
-						"100234334"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Loan Transactions",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{host}}/api/loan-transactions/100234334",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"loan-transactions",
-						"100234334"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "List Loans",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{host}}/api/loan/list",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"loan",
-						"list"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Ledger - Summary",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{host}}/api/ledger/summary",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"ledger",
-						"summary"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Ledger - Get entries by loan",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{host}}/api/ledger/100234334",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"ledger",
-						"100234334"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Create account",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"holderName\": \"Novo lucas windows\",\n    \"holderBirthDay\": \"1994-09-01\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "Reporting",
+			"item": [
+				{
+					"name": "Ledger Summary",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"startDate\": \"2021-04-03\",\r\n    \"endDate\": \"2024-04-03\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/ledger/reporting/summary",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"ledger",
+								"reporting",
+								"summary"
+							]
 						}
-					}
-				},
-				"url": {
-					"raw": "{{host}}/api/account",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"account"
-					]
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Create loan - Price",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"accountId\": 100234248,\n    \"amount\":  22334,\n    \"term\": 4,\n    \"interestRate\": 2, \n    \"interestFrequency\": \"DAY\",\n    \"amortizationType\": \"PRICE\",\n    \"disbursementDate\": \"2023-03-11\",\n    \"tax\": \"IOF\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "Account",
+			"item": [
+				{
+					"name": "Get account",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/account/10000000024193",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"account",
+								"10000000024193"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{host}}/api/loan",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"loan"
-					]
+				{
+					"name": "Create account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"holderName\": \"Lucas xasxdsadsadas\",\n    \"holderBirthDay\": \"2002-01-01\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/account",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"account"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Create loan - SAC",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"accountId\": 100234248,\n    \"amount\":  50000,\n    \"term\": 12,\n    \"interestRate\": 3,\n    \"amortizationType\": \"SAC\",\n    \"interestFrequency\": \"DAY\",\n    \"disbursementDate\": \"2023-02-12\",\n    \"tax\": \"IOF\"\n}   ",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "Custom",
+			"item": [
+				{
+					"name": "Load test",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/load-test",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"load-test"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{host}}/api/loan",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"loan"
-					]
+				{
+					"name": "Refresh table",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/table-refresher/12",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"table-refresher",
+								"12"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Loan - Disbursement",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"loanId\": 100234348\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "Loan",
+			"item": [
+				{
+					"name": "Get Loan",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/loan/40000000000178",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"loan",
+								"40000000000178"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{host}}/api/loan-transactions/disburse",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"loan-transactions",
-						"disburse"
-					]
+				{
+					"name": "Create loan - Price",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": 10000000016397,\n    \"amount\": 5000,\n    \"term\": 12,\n    \"interestRate\": 16.55,\n    \"amortizationType\": \"PRICE\",\n    \"interestFrequency\": \"YEAR\",\n    \"disbursementDate\": \"2023-01-27\",\n    \"tax\": \"IOF\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/loan",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"loan"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create loan - SAC",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accountId\": 70000000000146,\n    \"amount\":  6777,\n    \"term\": 48,\n    \"interestRate\": 19,\n    \"amortizationType\": \"SAC\",\n    \"interestFrequency\": \"YEAR\",\n    \"disbursementDate\": \"2023-05-02\",\n    \"tax\": \"IOF\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/loan",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"loan"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Loan - Repayment",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "x-api-key",
-						"value": "{{apikey}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"loanId\": 100234348,\n    \"amount\": 517978\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "Loan transactions",
+			"item": [
+				{
+					"name": "Loan Transaction - Disbursement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"loanId\": 70000000000200\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/loan-transactions/disburse",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"loan-transactions",
+								"disburse"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{host}}/api/loan-transactions/repayment",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"loan-transactions",
-						"repayment"
-					]
+				{
+					"name": "Loan Transaction - Repayment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"loanId\": 70000000000200,\n    \"amount\": 5641.40\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/loan-transactions/repayment",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"loan-transactions",
+								"repayment"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Loan Transactions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/loan-transactions/10000000021679",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"loan-transactions",
+								"10000000021679"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
+		},
+		{
+			"name": "Ledger",
+			"item": [
+				{
+					"name": "Ledger - Get entries by loan",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{apikey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/ledger/10000000001411",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"ledger",
+								"10000000001411"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

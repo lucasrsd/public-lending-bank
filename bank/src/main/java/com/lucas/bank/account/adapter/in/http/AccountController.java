@@ -2,10 +2,13 @@ package com.lucas.bank.account.adapter.in.http;
 
 import com.lucas.bank.account.adapter.in.contracts.CreateAccountRequest;
 import com.lucas.bank.account.adapter.in.contracts.CreateAccountResponse;
+import com.lucas.bank.account.adapter.out.AccountPOJO;
 import com.lucas.bank.account.application.port.in.CreateAccountUseCase;
 import com.lucas.bank.account.application.port.in.LoadAccountQuery;
+import com.lucas.bank.projector.application.port.out.AccountProjectionPort;
 import com.lucas.bank.shared.adapters.WebAdapter;
 import com.lucas.bank.shared.persistenceManager.UnitOfWork;
+import com.lucas.bank.shared.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +21,6 @@ import javax.validation.Valid;
 public class AccountController {
 
     private final CreateAccountUseCase createAccountUseCase;
-
     private final LoadAccountQuery loadAccountQuery;
 
     @PostMapping
@@ -34,4 +36,10 @@ public class AccountController {
         var account = loadAccountQuery.loadAccount(accountId);
         return CreateAccountResponse.mapToResponse(account);
     }
+
+    @PostMapping(path = "/test")
+    AccountPOJO createAccount(@Valid @RequestBody AccountPOJO request) {
+        return request;
+    }
+
 }

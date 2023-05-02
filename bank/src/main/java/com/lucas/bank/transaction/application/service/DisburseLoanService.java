@@ -28,7 +28,7 @@ public class DisburseLoanService implements DisburseLoanUseCase {
 
         var loanAggregate = loadLoanQuery.loadLoan(loanId);
 
-        loanTransactionUseCase.activateLoan(loanId, unitOfWork);
+        loanTransactionUseCase.disburse(loanId, unitOfWork);
 
         BigDecimal disbursementAmount = loanAggregate.getLoan().getAmount();
         BigDecimal totalTaxAmount = loanAggregate.getInstallments().getDetails().getTaxTotalAmount();

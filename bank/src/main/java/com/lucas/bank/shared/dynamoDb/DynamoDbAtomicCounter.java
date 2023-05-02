@@ -14,7 +14,7 @@ import java.util.Map;
 @Component
 public class DynamoDbAtomicCounter implements AtomicCounter {
 
-    private final Logger LOG = LoggerFactory.getLogger(DynamoDbAtomicCounter.class);
+    private final Logger log = LoggerFactory.getLogger(DynamoDbAtomicCounter.class);
     private DynamoDbClient client;
 
     public DynamoDbAtomicCounter() {
@@ -40,6 +40,8 @@ public class DynamoDbAtomicCounter implements AtomicCounter {
                 .build();
 
         var updateResult = this.client.updateItem(updateItemRequest);
+
+        log.info("Atomic counter generate transaction executed, consumed capacity: {}", updateResult.consumedCapacity().capacityUnits());
 
         return StaticInformation.getRegionIdPrefix() +  Long.parseLong(updateResult.attributes().get("counter").n());
     }

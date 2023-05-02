@@ -1,16 +1,15 @@
 package com.lucas.bank.loan.adapter.in.contracts;
 
 import com.lucas.bank.loan.application.port.in.CreateLoanCommand;
+import com.lucas.bank.shared.staticInformation.StaticInformation;
 import lombok.*;
 import org.hibernate.validator.constraints.Range;
-import org.joda.time.LocalDateTime;
 
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 
 @Data
@@ -28,7 +27,7 @@ public class CreateLoanRequest {
     public BigDecimal amount;
 
     @NotNull
-    @Range(min = 1, max=10000)
+    @Range(min = 1, max=480)
     public Integer term;
 
     @NotNull
@@ -40,6 +39,7 @@ public class CreateLoanRequest {
 
     public String tax;
 
+    @NotNull
     public String disbursementDate;
 
     public CreateLoanCommand mapToCommand() {
@@ -52,7 +52,7 @@ public class CreateLoanRequest {
                 .interestFrequency(getInterestFrequency())
                 .term(getTerm())
                 .tax(getTax())
-                .disbursementDate(LocalDate.parse(disbursementDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay())
+                .disbursementDate(LocalDate.parse(disbursementDate, StaticInformation.DATE_FORMATTER).atStartOfDay())
                 .build();
     }
 }

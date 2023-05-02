@@ -2,10 +2,7 @@ package com.lucas.bank.shared.dynamoDb;
 
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
-import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
+import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.Condition;
@@ -23,7 +20,7 @@ import java.util.Map;
 @Component
 public class DynamoDbQueryWrapper<T> {
 
-    private final Logger LOG = LoggerFactory.getLogger(DynamoDbDistributedLock.class);
+    private final Logger LOG = LoggerFactory.getLogger(DynamoDbQueryWrapper.class);
     private DynamoDBMapper mapper;
     private Class<T> parserType;
 
@@ -40,67 +37,44 @@ public class DynamoDbQueryWrapper<T> {
         return mapper.load(object);
     }
 
+    public List<T> queryIndexByKeyAndIntegerSk(T objectWithPk, String indexName, String skName, Integer skValue) {
 
-    public List<T> listByPkBeginsWithAndSk(String pkPrefix, String sk) {
+        Condition condition = new Condition()
+                .withComparisonOperator(ComparisonOperator.EQ)
+                .withAttributeValueList(new AttributeValue().withN(skValue.toString()));
 
-        Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-        eav.put(":prefix", new AttributeValue().withS(pkPrefix));
-        eav.put(":sk", new AttributeValue().withS(sk));
+        final DynamoDBQueryExpression<T> queryExpression = new DynamoDBQueryExpression<>();
+        queryExpression.withHashKeyValues(objectWithPk);
+        queryExpression.withRangeKeyCondition(skName, condition);
+        queryExpression.withIndexName(indexName);
+        queryExpression.withConsistentRead(false);
+        queryExpression.withReturnConsumedCapacity(ReturnConsumedCapacity.INDEXES);
 
-        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
-                .withFilterExpression("begins_with(pk, :prefix) and sk = :sk")
-                .withExpressionAttributeValues(eav);
-
-        return mapper.scan(this.parserType, scanExpression);
+        var result =  mapper.query(this.parserType, queryExpression);
+        return result;
     }
 
-    public List<T> listByPkBeginsWithAndSkBeginsWith(String pkPrefix, String skPrefix) {
+    public List<T> queryIndexByPk(T objectWithPk, String indexName) {
+        final DynamoDBQueryExpression<T> queryExpression = new DynamoDBQueryExpression<>();
+        queryExpression.withHashKeyValues(objectWithPk);
+        queryExpression.withIndexName(indexName);
+        queryExpression.withConsistentRead(false);
+        queryExpression.withReturnConsumedCapacity(ReturnConsumedCapacity.INDEXES);
 
-        Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-        eav.put(":pkPrefix", new AttributeValue().withS(pkPrefix));
-        eav.put(":skPrefix", new AttributeValue().withS(skPrefix));
-
-        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
-                .withFilterExpression("begins_with(pk, :pkPrefix) and begins_with(sk, :skPrefix)")
-                .withExpressionAttributeValues(eav);
-
-        return mapper.scan(this.parserType, scanExpression);
+        var result = mapper.query(this.parserType, queryExpression);
+        return result;
     }
 
-    public List<T> listByPkBeginsWith(String pkPrefix) {
-
-        Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-        eav.put(":prefix", new AttributeValue().withS(pkPrefix));
-
-        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
-                .withFilterExpression("begins_with(pk, :prefix)")
-                .withExpressionAttributeValues(eav);
-
-        return mapper.scan(this.parserType, scanExpression);
-    }
-
-    public List<T> indexFullScan(String indexName) {
-        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
-                .withIndexName(indexName);
-
-        return mapper.scan(this.parserType, scanExpression);
-    }
-
-    public List<T> scanIndexByBatchBlockAndStatus(String indexName, Integer batchBlock, String status) {
-
-        Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-        eav.put(":batchBlock", new AttributeValue().withN(batchBlock.toString()));
-        eav.put(":loanState", new AttributeValue().withS(status));
-
+    public List<T> scanIndex(String indexName) {
         DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
                 .withIndexName(indexName)
-                .withFilterExpression("batchBlock = :batchBlock and loanState = :loanState")
-                .withExpressionAttributeValues(eav);
+                .withReturnConsumedCapacity(ReturnConsumedCapacity.INDEXES);
 
-        return mapper.scan(this.parserType, scanExpression);
+        var result = mapper.scan(this.parserType, scanExpression);
+        return result;
     }
 
-    public List<T> queryPkWithSkPrefix(T objectWithPk, String skPrefix) {
+    public List<T> queryPkWithSkPrefix(T objectWithPk, String skName, String skPrefix) {
 
         Condition condition = new Condition()
                 .withComparisonOperator(ComparisonOperator.BEGINS_WITH)
@@ -108,8 +82,10 @@ public class DynamoDbQueryWrapper<T> {
 
         final DynamoDBQueryExpression<T> queryExpression = new DynamoDBQueryExpression<>();
         queryExpression.withHashKeyValues(objectWithPk);
-        queryExpression.withRangeKeyCondition("sk", condition);
+        queryExpression.withRangeKeyCondition(skName, condition);
+        queryExpression.withReturnConsumedCapacity(ReturnConsumedCapacity.TOTAL);
 
-        return mapper.query(this.parserType, queryExpression);
+        var result = mapper.query(this.parserType, queryExpression);
+        return result;
     }
 }

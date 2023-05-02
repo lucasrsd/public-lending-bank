@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface LoanTransactionUseCase {
 
-    void activateLoan(Long loanId, UnitOfWork unitOfWork);
-    void makeRepayment(Long loanId, List<Installment> newInstallments, UnitOfWork unitOfWork);
+    void disburse(Long loanId, UnitOfWork unitOfWork);
+    void repay(Long loanId, List<Installment> newInstallments, UnitOfWork unitOfWork);
     void dailyAccrual(Long loanId, LocalDateTime bookingDate, UnitOfWork unitOfWork);
 }

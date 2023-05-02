@@ -1,4 +1,4 @@
-package com.lucas.bank.loan.adapter.in.contracts;
+package com.lucas.bank.installment.adapter.in.contracts;
 
 import lombok.Builder;
 import lombok.Value;
@@ -14,5 +14,4 @@ public class InstallmentDetailResponse {
     public BigDecimal interestTotalAmount;
     public BigDecimal taxesTotalAmount;
     public Map<String, BigDecimal> taxes;
-
 }

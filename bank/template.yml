@@ -13,6 +13,9 @@ Globals:
         QUEUE_ARN_LOAN_ACCRUAL_EXTRACTION: !Ref LoanAccrualExtraction
         QUEUE_ARN_LOAN_ACCRUAL: !Ref LoanAccrualQueue
         QUEUE_ARN_LOAN_DAILY_BATCH_JOB: !Ref LoanDailyBatchJob
+        QUEUE_ARN_BANK_SQL_PROJECTOR: !Ref BankSQLProjectorQueue
+        DATABASE_URL: 'jdbc:mysql://database-java-bank.cfuwtlfxdpkg.eu-west-1.rds.amazonaws.com/bankdb'
+        DATABASE_SECRET_NAME: 'rds!db-92d821fc-c917-42aa-8fc3-80f447c8562a'
         BATCH_MAIN_REGION: eu-west-1
 
 Conditions:
@@ -45,7 +48,7 @@ Resources:
           CreateUsagePlan: PER_API
           Description: Usage plan for this API
 
-# LAMBDAS
+  # LAMBDAS
 
   ApiFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -70,6 +73,8 @@ Resources:
             TableName: bank-lock
         - DynamoDBCrudPolicy:
             TableName: bank-configuration
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:rds!db-92d821fc-c917-42aa-8fc3-80f447c8562a-u8LRe6'
       Events:
         ApiGateway:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -87,64 +92,64 @@ Resources:
       Description: Manual load balancer simulation to distribute requests through multiple active regions
       MemorySize: 256
       InlineCode: |
-            import json
-            import urllib3
-            import random
-            import os
-            import boto3
-            from botocore.exceptions import ClientError
-            
-            http = urllib3.PoolManager()
-            
-            def get_secret():
-              secret_name = "dev/bank/nodes"
-              region_name = "eu-west-1"
-              # Create a Secrets Manager client
-              session = boto3.session.Session()
-              client = session.client(
-              service_name='secretsmanager',
-              region_name=region_name
-              )
-              try:
-                get_secret_value_response = client.get_secret_value(
-                SecretId=secret_name
-                )
-              except ClientError as e:
-                # For a list of exceptions thrown, see
-                # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-                raise e
-              # Decrypts secret using the associated KMS key.
-              return get_secret_value_response['SecretString']
-              # Your code goes here.
-            
-            def lambda_handler(event, context):
-              
-              secret = get_secret()
-              regions = json.loads(secret)
-              
-              target = random.randint(1 ,3)
-              
-              api = regions['REGION_' + str(target) + '_URL']
-              key = regions['REGION_' + str(target) + '_KEY']
-              
-              if api is None or key is None:
-                print('ENVIRONMENT VARIABLES NOT FOUND')
-              
-              response = http.request(event['httpMethod'], api + event['path'],
-              headers={
-              'x-api-key': key,
-              'content-type': 'application/json'
-            },
-              body = event['body'])
-              
-              return {
-            'statusCode': response.status,
-            'headers': {
-              'Content-Type': response.headers['Content-Type']
-            },
-            'body': response.data
-            }
-            # Finish code
+        import json
+        import urllib3
+        import random
+        import os
+        import boto3
+        from botocore.exceptions import ClientError
+        
+        http = urllib3.PoolManager()
+        
+        def get_secret():
+          secret_name = "dev/bank/nodes"
+          region_name = "eu-west-1"
+          # Create a Secrets Manager client
+          session = boto3.session.Session()
+          client = session.client(
+          service_name='secretsmanager',
+          region_name=region_name
+          )
+          try:
+            get_secret_value_response = client.get_secret_value(
+            SecretId=secret_name
+            )
+          except ClientError as e:
+            # For a list of exceptions thrown, see
+            # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+            raise e
+          # Decrypts secret using the associated KMS key.
+          return get_secret_value_response['SecretString']
+          # Your code goes here.
+        
+        def lambda_handler(event, context):
+        
+          secret = get_secret()
+          regions = json.loads(secret)
+        
+          target = random.randint(1 ,3)
+        
+          api = regions['REGION_' + str(target) + '_URL']
+          key = regions['REGION_' + str(target) + '_KEY']
+        
+          if api is None or key is None:
+            print('ENVIRONMENT VARIABLES NOT FOUND')
+        
+          response = http.request(event['httpMethod'], api + event['path'],
+          headers={
+          'x-api-key': key,
+          'content-type': 'application/json'
+        },
+          body = event['body'])
+        
+          return {
+        'statusCode': response.status,
+        'headers': {
+          'Content-Type': response.headers['Content-Type']
+        },
+        'body': response.data
+        }
+        # Finish code
       Handler: index.lambda_handler
       Policies:
         - AWSLambdaExecute
@@ -193,11 +198,13 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName:
               !GetAtt LoanAccrualQueue.QueueName
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:rds!db-92d821fc-c917-42aa-8fc3-80f447c8562a-u8LRe6'
       Events:
         DailyBatchJob:
           Type: Schedule
           Properties:
-            Schedule: 'cron(1 0 * * ? *)'
+            Schedule: 'cron(0 6 * * ? *)'
             Name: DailySchedule
             Enabled: true
 
@@ -233,6 +240,8 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName:
               !GetAtt LoanAccrualQueue.QueueName
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:rds!db-92d821fc-c917-42aa-8fc3-80f447c8562a-u8LRe6'
       Events:
         LoanDailyBatchJob:
           Type: SQS
@@ -271,6 +280,8 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName:
               !GetAtt LoanAccrualQueue.QueueName
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:rds!db-92d821fc-c917-42aa-8fc3-80f447c8562a-u8LRe6'
       Events:
         LoanAccrualBatchExtractionTrigger:
           Type: SQS
@@ -309,13 +320,87 @@ Resources:
         - SQSSendMessagePolicy:
             QueueName:
               !GetAtt LoanAccrualQueue.QueueName
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:rds!db-92d821fc-c917-42aa-8fc3-80f447c8562a-u8LRe6'
       Events:
         LoanAccrualTrigger:
           Type: SQS
           Properties:
             Queue: !GetAtt LoanAccrualQueue.Arn
 
-# QUEUES
+  ReportingTriggerFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Condition: createGlobalTable
+    Properties:
+      FunctionName: bank-dynamodb-trigger
+      Description: Receive stream data from DynamoDB to create projections and reports
+      CodeUri: .
+      Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Runtime: java11
+      AutoPublishAlias: production
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Architectures:
+        - x86_64
+      Policies:
+        # Read more about SAM policy templates here
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - AWSLambdaExecute
+        - DynamoDBCrudPolicy:
+            TableName: bank-data
+        - DynamoDBCrudPolicy:
+            TableName: bank-lock
+        - DynamoDBCrudPolicy:
+            TableName: bank-configuration
+        - SQSSendMessagePolicy:
+            QueueName:
+              !GetAtt BankSQLProjectorQueue.QueueName
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:rds!db-92d821fc-c917-42aa-8fc3-80f447c8562a-u8LRe6'
+      Events:
+        DynamoDBTable:
+          Type: DynamoDB
+          Properties:
+            Stream:
+              !GetAtt BankDataDynamoDbTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 1
+
+  SqlProjectionFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Condition: createGlobalTable
+    Properties:
+      FunctionName: bank-sql-projection
+      Description: Process events from dynamo streams and create projections to SQL read models
+      CodeUri: .
+      Handler: com.lucas.bank.StreamLambdaHandler::handleRequest
+      Runtime: java11
+      AutoPublishAlias: production
+      SnapStart:
+        ApplyOn: PublishedVersions
+      Architectures:
+        - x86_64
+      Policies:
+        # Read more about SAM policy templates here
+        # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - AWSLambdaExecute
+        - DynamoDBCrudPolicy:
+            TableName: bank-data
+        - DynamoDBCrudPolicy:
+            TableName: bank-lock
+        - DynamoDBCrudPolicy:
+            TableName: bank-configuration
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:rds!db-92d821fc-c917-42aa-8fc3-80f447c8562a-u8LRe6'
+      Events:
+        ProjectionTrigger:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt BankSQLProjectorQueue.Arn
+            ScalingConfig:
+              MaximumConcurrency: 15
+
+  # QUEUES
 
   LoanDailyBatchJob:
     Type: AWS::SQS::Queue
@@ -332,7 +417,12 @@ Resources:
     Properties:
       QueueName: 'loan-accrual-queue'
 
-# DYNAMODB
+  BankSQLProjectorQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: 'bank-slq-projector-queue'
+
+  # DYNAMODB
 
   BankDataDynamoDbTable:
     Type: AWS::DynamoDB::GlobalTable
@@ -349,6 +439,12 @@ Resources:
           AttributeType: S
         - AttributeName: loanState
           AttributeType: S
+        - AttributeName: ledgerBookingDate
+          AttributeType: N
+        - AttributeName: loanId
+          AttributeType: N
+        - AttributeName: batchBlock
+          AttributeType: N
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
@@ -356,16 +452,25 @@ Resources:
           KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
       GlobalSecondaryIndexes:
-        - IndexName: loan-state-gsi
+        - IndexName: loan-state-by-batch-block-gsi
           KeySchema:
             - AttributeName: loanState
               KeyType: HASH
+            - AttributeName: batchBlock
+              KeyType: RANGE
           Projection:
             NonKeyAttributes:
               - lastAccrualDate
-              - batchBlock
               - loanId
             ProjectionType: INCLUDE
+        - IndexName: ledger-entries-by-loan-gsi
+          KeySchema:
+            - AttributeName: loanId
+              KeyType: HASH
+            - AttributeName: ledgerBookingDate
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
       Replicas:
         - Region: eu-west-1
         - Region: eu-central-1

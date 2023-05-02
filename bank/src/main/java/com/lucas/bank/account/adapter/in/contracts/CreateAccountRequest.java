@@ -1,6 +1,7 @@
 package com.lucas.bank.account.adapter.in.contracts;
 
 import com.lucas.bank.account.application.port.in.CreateAccountCommand;
+import com.lucas.bank.shared.staticInformation.StaticInformation;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -21,7 +22,7 @@ public class CreateAccountRequest {
     public CreateAccountCommand mapToCommand() {
         return CreateAccountCommand
                 .builder()
-                .holderBirthDate(LocalDate.parse(holderBirthDay, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay())
+                .holderBirthDate(LocalDate.parse(holderBirthDay, StaticInformation.DATE_FORMATTER).atStartOfDay())
                 .holderName(getHolderName())
                 .build();
     }

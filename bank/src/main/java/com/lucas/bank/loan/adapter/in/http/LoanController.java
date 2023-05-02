@@ -1,6 +1,5 @@
 package com.lucas.bank.loan.adapter.in.http;
 
-import com.lucas.bank.loan.adapter.in.contracts.ListLoanResponse;
 import com.lucas.bank.loan.adapter.in.contracts.LoanOverviewResponse;
 import com.lucas.bank.shared.adapters.DistributedLock;
 import com.lucas.bank.shared.adapters.WebAdapter;
@@ -22,8 +21,6 @@ public class LoanController {
 
     private final CreateLoanUseCase createLoanUseCase;
     private final LoadLoanQuery loadLoanQuery;
-
-    private final DistributedLock distributedLock;
     @PostMapping
     LoanOverviewResponse create(@Valid @RequestBody CreateLoanRequest request) {
         var transaction = UnitOfWork.newInstance();
@@ -35,10 +32,5 @@ public class LoanController {
     @GetMapping(path = "/{loanId}")
     LoanOverviewResponse get(@PathVariable("loanId") Long loanId) {
         return LoanOverviewResponse.mapToResponse(loadLoanQuery.loadLoan(loanId));
-    }
-
-    @GetMapping(path = "/list")
-    ListLoanResponse list() {
-        return LoanOverviewResponse.mapToResponse(loadLoanQuery.listLoans().getLoans());
     }
 }

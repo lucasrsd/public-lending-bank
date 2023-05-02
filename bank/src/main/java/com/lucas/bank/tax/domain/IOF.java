@@ -9,6 +9,8 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.lucas.bank.shared.staticInformation.StaticFieldName.ADDITIONAL_IOF_FIELD;
+import static com.lucas.bank.shared.staticInformation.StaticFieldName.DAILY_IOF_FIELD;
 import static com.lucas.bank.shared.staticInformation.StaticInformation.CALCULATION_PRECISION_SCALE;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -37,8 +39,8 @@ public class IOF {
             dailyIof = dailyIof.setScale(StaticInformation.TRANSACTION_PRECISION_SCALE, StaticInformation.TRANSACTION_ROUNDING_MODE);
 
             Map<String, BigDecimal> composition = new HashMap<>();
-            composition.put("ADDITIONAL_IOF", additionalIof);
-            composition.put("DAILY_IOF", dailyIof);
+            composition.put(ADDITIONAL_IOF_FIELD, additionalIof);
+            composition.put(DAILY_IOF_FIELD, dailyIof);
 
             var iofTax = InstallmentTax
                     .builder()
